@@ -1,0 +1,6 @@
+title: ProjectData
+tooltip: Export selected project data (View Templates, Filters, Schedules, etc.) to CSV.
+author: Jarek Wityk
+contexts:
+  - project
+script: script.py

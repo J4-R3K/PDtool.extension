@@ -1,0 +1,5 @@
+title: Get 
+tooltip: Display Project Base Point and Survey Points
+description: Display coordinates of Project Base Points and Survey Point of main model and all linked models
+icon: icon.png
+command: script.py

@@ -1,0 +1,7 @@
+title: FillReg
+tooltip: Reassign existing filled regions to a different Filled Region Type.
+author: Jarek Wityk @ PD
+tab: PD Tools
+panel: Cleanup
+pushbutton: ReassignFilledRegions
+script: script.py

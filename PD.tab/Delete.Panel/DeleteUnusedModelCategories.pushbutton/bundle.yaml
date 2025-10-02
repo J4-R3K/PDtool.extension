@@ -1,0 +1,7 @@
+title: Subcategories
+tooltip: List and delete unused or custom subcategories like "Site ➜ BG_Utilities".
+tab: PD Tools
+panel: CleanUp
+pushbutton:
+  - name: DeleteSubcategories
+    script: DeleteSubcategories.pushbutton_script.py

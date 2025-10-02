@@ -1,0 +1,7 @@
+bundle_type: script
+title: DR List
+tooltip: Export a list of sheets from the current and linked models.
+author: Jarek Wityk
+description: Exports the sheet number and name from the current model and linked models into a CSV file.
+python_path: script.py
+

@@ -1,0 +1,5 @@
+
+content:
+  script: script.py
+  icon: HealthCheck.png
+tooltip: "Check the model for element health, such as missing parameters or incorrect values."

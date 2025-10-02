@@ -1,0 +1,7 @@
+title: Txt Style
+tooltip: Modify font, size, width factor, and formatting of TextNoteTypes.
+author: Jarek Wityk @ PD
+tab: PD
+panel: Text
+pushbutton: EditTextStyle
+script: script.py

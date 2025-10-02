@@ -1,0 +1,7 @@
+title: Txt Styles
+tooltip: Find and safely rename TextNoteTypes (Text Styles)
+author: Jarek Wityk @ PD
+tab: PD
+panel: Text
+pushbutton: RenameTextStyles
+script: script.py

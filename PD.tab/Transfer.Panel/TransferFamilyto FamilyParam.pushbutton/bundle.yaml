@@ -1,0 +1,8 @@
+title: Fam2FamPara 
+tooltip: Select an open family and choose parameters to copy into the current family.
+author: Jarek Wityk @ PD
+tab: PD
+panel: Transfer
+pushbutton:
+  name: TransferFamilyParamsFromNested
+  script: script.py

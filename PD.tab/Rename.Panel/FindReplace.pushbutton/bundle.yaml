@@ -1,0 +1,4 @@
+title: Find/Replace
+tooltip: Rename elements using find/replace on their names.
+author: Jarek Wityk
+script: script.py

@@ -1,0 +1,8 @@
+title: Device ➜ Cable
+tooltip: Copy selected parameters from a Protective Device to a Cable ID tag. Supports manual selection loop.
+author: pyRevit Script Generator
+tab: PD
+panel: Data Transfer
+pushbutton:
+  script: script.py
+  icon: Copy

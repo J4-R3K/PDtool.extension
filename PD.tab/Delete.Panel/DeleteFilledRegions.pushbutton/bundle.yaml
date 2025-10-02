@@ -1,0 +1,7 @@
+title: FillReg
+ooltip: Delete unused Filled Region Types from the project.
+author: Jarek Wityk @ PD
+tab: PD Tools
+panel: Cleanup
+pushbutton: DeleteUnusedFilledRegions
+script: script.py

@@ -1,0 +1,7 @@
+title: AnnoFonts
+tooltip: Batch-update fonts, size, and style across annotation symbol families (tags, notes, etc.).
+author: Jarek Wityk @ PD
+tab: PD
+panel: Edit
+pushbutton: EditAnnotationFonts
+script: script.py

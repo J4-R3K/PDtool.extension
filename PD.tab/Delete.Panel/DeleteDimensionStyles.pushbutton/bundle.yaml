@@ -1,0 +1,10 @@
+title: DimsStyles
+tooltip: Safely delete unused Dimension Styles from the model.
+author: Jarek Wityk @ PD
+tab: PD Tools
+panel: Dimensions
+pushbutton: 
+  - name: Delete Dimension Styles
+    script: script.py
+    tooltip: Delete unused Dimension Styles (DimensionType) safely.
+    icon: Delete.ico

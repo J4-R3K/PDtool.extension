@@ -1,0 +1,8 @@
+# Button properties
+Name: Paint
+Tooltip: Removes paint from all selected Revit elements.
+author: Jarek Wityk
+Script: script.py
+# Optional icon path (16x16 png recommended)
+# Icon: icon.png
+

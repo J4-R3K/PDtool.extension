@@ -1,0 +1,7 @@
+title: Txt Styles
+tooltip: Delete only unused TextNoteTypes (Text Styles)
+author: Jarek Wityk @ PD
+tab: PD
+panel: Text
+pushbutton: DeleteUnusedTextStyles
+script: script.py

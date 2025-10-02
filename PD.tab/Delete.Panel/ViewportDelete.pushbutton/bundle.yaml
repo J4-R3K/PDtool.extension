@@ -1,0 +1,9 @@
+title: ViewportTypes
+tooltip: Lists all used viewport types with counts for safe manual reassignment and purging.
+author: pyRevit Script Generator
+tab: Sheets
+panel: Cleanup
+pushbutton:
+  script: script.py
+  title: Audit Viewport Types
+  tooltip: View count of each viewport type used in the model.

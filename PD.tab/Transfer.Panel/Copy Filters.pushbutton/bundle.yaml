@@ -1,0 +1,4 @@
+script_path: script.py
+title: Copy Filters
+tooltip: Transfers specific filters and its settings from current model and cloud-based linked models to the main model.
+author: Jarek Wityk

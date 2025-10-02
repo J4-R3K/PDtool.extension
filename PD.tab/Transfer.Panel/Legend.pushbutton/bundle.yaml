@@ -1,0 +1,4 @@
+script_path: script.py
+title: Legend
+tooltip: Copy selected Legends from a linked Revit model into the main document.
+author: Jarek Wityk

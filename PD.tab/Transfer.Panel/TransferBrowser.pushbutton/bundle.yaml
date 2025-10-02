@@ -1,0 +1,4 @@
+script_path: script.py
+title: Browser
+tooltip: Transfers specific Project Browser Template from cloud-based linked models to the main model.
+author: Jarek Wityk

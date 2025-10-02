@@ -1,0 +1,10 @@
+title: ParaAudit
+tooltip: Audits all parameters in the model and groups them by type and origin.
+author: Jarek Wityk
+pyrevit-version: 4.x
+ui:
+  tab: PD
+  panel: Delete
+  pushbutton:
+    - script: script.py
+      title: DeleteParameters

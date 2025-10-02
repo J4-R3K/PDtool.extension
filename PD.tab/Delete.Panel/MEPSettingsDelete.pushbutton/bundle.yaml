@@ -1,0 +1,7 @@
+title: LoadClass.
+tooltip: Delete electrical Load Classifications from MEP settings.
+author: Jarek Wityk @ PD
+tab: PD
+panel: Delete
+pushbutton: MEPSettingsDelete
+script: script.py

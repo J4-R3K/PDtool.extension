@@ -1,0 +1,4 @@
+script_path: script.py
+title: Parameters 
+tooltip: Transfers specific parameters and values from parameters from cloud-based linked models to the main model.
+author: Jarek Wityk

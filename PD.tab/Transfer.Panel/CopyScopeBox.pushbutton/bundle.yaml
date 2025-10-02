@@ -1,0 +1,4 @@
+script_path: script.py
+title: ScpBox
+tooltip: Copies specific scopeboxes from cloud-based linked models to the main model.
+author: Jarek Wityk
