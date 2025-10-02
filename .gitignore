@@ -1,0 +1,37 @@
+# -------- Your choices --------
+EF-Starter.tab/**          # ignore this entire tab
+lib/**                     # ignore shared libs (not your code)
+hooks/**                   # ignore pyRevit hooks for now
+bin/**                     # ignore binaries/build output (empty now)
+
+# If/when you add tools to track under PD.tab, start by ignoring everything...
+PD.tab/**
+
+# ...then whitelist the specific tools you DO want (examples below)
+# !PD.tab/<Your Panel>.Panel/<Your Tool>.pushbutton/**
+# !PD.tab/<Another Panel>.Panel/<Another Tool>.pushbutton/**
+
+# -------- IDE / OS / temp --------
+# JetBrains / PyCharm
+.idea/
+*.iml
+
+# Python noise
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# OS noise
+.DS_Store
+Thumbs.db
+
+# Misc temp
+*.log
+*.tmp
+~$*
+
+# Optional: common virtual env names (uncomment if present)
+# .venv/
+# venv/
+# env/
