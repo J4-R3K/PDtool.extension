@@ -1,0 +1,11 @@
+# bundle.yaml
+title: Reset Link
+tooltip: Reports residual rotation/offsets on selected Revit links and optionally zeros them by applying the inverse transform. Use with links placed By Shared Coordinates.
+author: pyRevit Script Generator
+tab: Coordination
+panel: Coordinates
+pushbutton:
+  - name: ResetLinkTransform
+    script: script.py
+    tooltip: Report & optionally reset residual transform on selected Revit links.
+

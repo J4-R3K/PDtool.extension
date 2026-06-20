@@ -1,7 +1,0 @@
-title: Txt Styles
-tooltip: Switch all notes using selected text styles to a target style.
-author: Jarek Wityk @ PD
-tab: PD
-panel: Text
-pushbutton: ReassignTextStyles
-script: script.py

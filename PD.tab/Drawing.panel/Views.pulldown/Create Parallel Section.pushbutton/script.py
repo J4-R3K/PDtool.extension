@@ -2,7 +2,7 @@
 """Create section view for walls or MEP elements like Cable Trays, Fixtures."""
 # pylint: disable=import-error,invalid-name,broad-except
 
-__author__ = 'Source: Jeremy Tammik\nAdapted by: pyRevit Script Generator'
+__author__ = "Source: Jeremy Tammik\nAdapted by: pyRevit Script Generator"
 
 from pyrevit import revit, DB, script
 
@@ -20,14 +20,19 @@ VALID_CATEGORIES = [
     DB.BuiltInCategory.OST_DuctCurves,
 ]
 
+
 def get_section_view_type():
     return doc.GetDefaultElementTypeId(DB.ElementTypeGroup.ViewTypeSection)
 
+
 def is_valid_mep_element(el):
     try:
-        return el.Category and el.Category.Id.IntegerValue in [int(c) for c in VALID_CATEGORIES]
+        return el.Category and el.Category.Id.IntegerValue in [
+            int(c) for c in VALID_CATEGORIES
+        ]
     except:
         return False
+
 
 def create_section_from_linear(el, section_type_id):
     loc = el.Location
@@ -69,6 +74,7 @@ def create_section_from_linear(el, section_type_id):
 
     DB.ViewSection.CreateSection(doc, section_type_id, section_box)
 
+
 def create_section_from_point(el, section_type_id):
     loc = el.Location
     if not isinstance(loc, DB.LocationPoint):
@@ -102,6 +108,7 @@ def create_section_from_point(el, section_type_id):
 
     DB.ViewSection.CreateSection(doc, section_type_id, section_box)
 
+
 def create_section(el, section_type_id):
     if isinstance(el, DB.Wall):
         create_section_from_linear(el, section_type_id)
@@ -111,6 +118,7 @@ def create_section(el, section_type_id):
             create_section_from_linear(el, section_type_id)
         elif isinstance(loc, DB.LocationPoint):
             create_section_from_point(el, section_type_id)
+
 
 def main():
     selection = revit.get_selection()
@@ -131,5 +139,6 @@ def main():
                 output.print_md("*Error on `{}` – {}*".format(el.Id, e))
 
     script.get_output().print_md("✅ Created sections for {} element(s).".format(count))
+
 
 main()

@@ -7,6 +7,7 @@ Rename Text Types & Dimension Styles (System Families)
 """
 
 import clr
+
 clr.AddReference("RevitAPI")
 from Autodesk.Revit.DB import *
 from pyrevit import forms, revit, script
@@ -16,13 +17,12 @@ output = script.get_output()
 
 # 1️⃣ User input
 CATEGORY_MAP = {
-    "Text Types":        TextNoteType,
-    "Dimension Styles":  DimensionType,
+    "Text Types": TextNoteType,
+    "Dimension Styles": DimensionType,
 }
 
 cat_choice = forms.SelectFromList.show(
-    sorted(CATEGORY_MAP.keys()),
-    title="Select Type Category to Rename"
+    sorted(CATEGORY_MAP.keys()), title="Select Type Category to Rename"
 )
 if not cat_choice:
     script.exit()
@@ -38,9 +38,11 @@ f_lc = find_text.lower()
 # 2️⃣ Collect all elements of the selected class
 elements = list(FilteredElementCollector(doc).OfClass(target_class))
 
+
 def get_name(el):
     param = el.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM)
     return param.AsString() if param else ""
+
 
 # All existing names
 all_names = [get_name(el) for el in elements if get_name(el)]
@@ -58,12 +60,17 @@ if not matches:
     script.exit()
 
 # 3️⃣ Collect instances to swap
-INSTANCE_CLASSES = {
-    "Text Types": TextNote,
-    "Dimension Styles": Dimension
-}
+INSTANCE_CLASSES = {"Text Types": TextNote, "Dimension Styles": Dimension}
 instance_class = INSTANCE_CLASSES.get(cat_choice)
-inst_elems = list(FilteredElementCollector(doc).OfClass(instance_class).WhereElementIsNotElementType()) if instance_class else []
+inst_elems = (
+    list(
+        FilteredElementCollector(doc)
+        .OfClass(instance_class)
+        .WhereElementIsNotElementType()
+    )
+    if instance_class
+    else []
+)
 
 renamed = []
 skipped = []

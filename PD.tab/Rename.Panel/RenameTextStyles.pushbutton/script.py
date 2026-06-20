@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
-__title__ = 'Rename Text Styles (Regex)'
-__author__ = 'Jarek Wityk @ PD'
+__title__ = "Rename Text Styles (Regex)"
+__author__ = "Jarek Wityk @ PD"
 
 import clr
+
 clr.AddReference("RevitAPI")
-import re, tempfile, os
+import re
+import tempfile
+import os
 
 from Autodesk.Revit.DB import *
 from pyrevit import revit, forms, script
@@ -45,7 +48,7 @@ selected_names = forms.SelectFromList.show(
     sorted(all_names),
     multiselect=True,
     title="Select Text Styles to Rename (see text list for help)",
-    button_name="Next"
+    button_name="Next",
 )
 
 if not selected_names:
@@ -54,15 +57,13 @@ if not selected_names:
 # ---------------------------------------
 # 4. Ask for RegEx pattern + replacement
 pattern = forms.ask_for_string(
-    title="Regex Rename",
-    prompt="RegEx pattern to match in style names:",
-    default=""
+    title="Regex Rename", prompt="RegEx pattern to match in style names:", default=""
 )
 
 replacement = forms.ask_for_string(
     title="Regex Replace",
     prompt="Replacement pattern (use \\1, \\2, etc.):",
-    default=""
+    default="",
 )
 
 if not (pattern and replacement):
@@ -73,7 +74,12 @@ if not (pattern and replacement):
 renamed = []
 skipped = []
 existing_names = [n.lower() for n in all_names]
-notes = list(FilteredElementCollector(doc).OfClass(TextNote).WhereElementIsNotElementType().ToElements())
+notes = list(
+    FilteredElementCollector(doc)
+    .OfClass(TextNote)
+    .WhereElementIsNotElementType()
+    .ToElements()
+)
 
 with revit.Transaction("Rename Text Styles (Regex)"):
 

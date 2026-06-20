@@ -1,5 +1,20 @@
-import os
-from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, DesignOption, View, ImportInstance, Material, Transaction, Family, Workset, FilteredWorksetCollector, ViewSheet, LinePatternElement, FillPatternElement, FamilySymbol, WorksetKind, View3D, ViewSchedule
+from Autodesk.Revit.DB import (
+    FilteredElementCollector,
+    BuiltInCategory,
+    DesignOption,
+    View,
+    ImportInstance,
+    Material,
+    Transaction,
+    Family,
+    FilteredWorksetCollector,
+    ViewSheet,
+    LinePatternElement,
+    FillPatternElement,
+    WorksetKind,
+    View3D,
+    ViewSchedule,
+)
 from pyrevit import revit, forms
 
 # Get the current document from pyRevit's revit module
@@ -21,7 +36,7 @@ target_metrics = [
     "LINE STYLES",
     "FILL PATTERNS",
     "LINE PATTERNS",
-    "LOADED FAMILIES"
+    "LOADED FAMILIES",
 ]
 
 # Define normalization ranges for each metric (excluding "PDF DOCUMENTS")
@@ -40,30 +55,51 @@ normalization_ranges = {
     "LINE STYLES": (0, 200),
     "FILL PATTERNS": (0, 200),
     "LINE PATTERNS": (0, 200),
-    "LOADED FAMILIES": (0, 1000)
+    "LOADED FAMILIES": (0, 1000),
 }
+
 
 # Function to calculate the correct value for each metric
 def calculate_metric_value(metric_name):
     if metric_name == "DESIGN OPTIONS":
-        design_options = FilteredElementCollector(doc).OfClass(DesignOption).ToElements()
+        design_options = (
+            FilteredElementCollector(doc).OfClass(DesignOption).ToElements()
+        )
         return len(design_options)
     elif metric_name == "WARNINGS":
         warnings = doc.GetWarnings()
         return len(warnings)
     elif metric_name == "WORKSETS":
-        user_worksets = [ws for ws in FilteredWorksetCollector(doc).ToWorksets() if ws.Kind == WorksetKind.UserWorkset]
+        user_worksets = [
+            ws
+            for ws in FilteredWorksetCollector(doc).ToWorksets()
+            if ws.Kind == WorksetKind.UserWorkset
+        ]
         return len(user_worksets)
     elif metric_name == "UNPLACED VIEWS":
         views = FilteredElementCollector(doc).OfClass(View).ToElements()
-        unplaced_views = [v for v in views if not isinstance(v, (ViewSheet, View3D, ViewSchedule)) and not v.IsTemplate and v.CanBePrinted]
+        unplaced_views = [
+            v
+            for v in views
+            if not isinstance(v, (ViewSheet, View3D, ViewSchedule))
+            and not v.IsTemplate
+            and v.CanBePrinted
+        ]
         return len(unplaced_views)
     elif metric_name == "CAD LINKS":
         cad_links = FilteredElementCollector(doc).OfClass(ImportInstance).ToElements()
         return len(cad_links)
     elif metric_name == "RASTER IMAGES":
-        raster_images = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_RasterImages).ToElements()
-        actual_raster_images = [img for img in raster_images if hasattr(img, "Name") and ".png" in img.Name.lower()]
+        raster_images = (
+            FilteredElementCollector(doc)
+            .OfCategory(BuiltInCategory.OST_RasterImages)
+            .ToElements()
+        )
+        actual_raster_images = [
+            img
+            for img in raster_images
+            if hasattr(img, "Name") and ".png" in img.Name.lower()
+        ]
         return len(actual_raster_images)
     elif metric_name == "MATERIALS":
         materials = FilteredElementCollector(doc).OfClass(Material).ToElements()
@@ -73,13 +109,19 @@ def calculate_metric_value(metric_name):
         in_place_families = [f for f in all_families if f.IsInPlace]
         return len(in_place_families)
     elif metric_name == "LINE STYLES":
-        line_patterns = FilteredElementCollector(doc).OfClass(LinePatternElement).ToElements()
+        line_patterns = (
+            FilteredElementCollector(doc).OfClass(LinePatternElement).ToElements()
+        )
         return len(line_patterns)
     elif metric_name == "FILL PATTERNS":
-        fill_patterns = FilteredElementCollector(doc).OfClass(FillPatternElement).ToElements()
+        fill_patterns = (
+            FilteredElementCollector(doc).OfClass(FillPatternElement).ToElements()
+        )
         return len(fill_patterns)
     elif metric_name == "LINE PATTERNS":
-        line_patterns = FilteredElementCollector(doc).OfClass(LinePatternElement).ToElements()
+        line_patterns = (
+            FilteredElementCollector(doc).OfClass(LinePatternElement).ToElements()
+        )
         return len(line_patterns)
     elif metric_name == "LOADED FAMILIES":
         loaded_families = FilteredElementCollector(doc).OfClass(Family).ToElements()
@@ -87,18 +129,27 @@ def calculate_metric_value(metric_name):
     else:
         return 0.0
 
+
 # Function to normalize a value based on min and max range
 def normalize_value(value, min_value, max_value):
     if max_value - min_value != 0:
         return (value - min_value) / (max_value - min_value)
     return 0
 
+
 # Correctly filter family instances based on the category "Generic Annotations"
 family_name = "PD_GAN_ModelHealth-Gauge"  # Updated family name
 
 # Filtering only placed FamilyInstance elements (not types)
-family_instances = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_GenericAnnotation).WhereElementIsNotElementType().ToElements()
-family_instances = [inst for inst in family_instances if inst.Symbol.Family.Name == family_name]
+family_instances = (
+    FilteredElementCollector(doc)
+    .OfCategory(BuiltInCategory.OST_GenericAnnotation)
+    .WhereElementIsNotElementType()
+    .ToElements()
+)
+family_instances = [
+    inst for inst in family_instances if inst.Symbol.Family.Name == family_name
+]
 
 # List to accumulate normalized values
 normalized_values = []
@@ -119,7 +170,9 @@ with Transaction(doc, "Update Health Check Values") as trans:
 
             if metric_name == "FILE SIZE (MB)":
                 # Do not update, but read the manually entered value
-                file_size_value = value_param.AsDouble()  # Store this value for OVERALL calculation
+                file_size_value = (
+                    value_param.AsDouble()
+                )  # Store this value for OVERALL calculation
 
             elif metric_name in target_metrics:
                 # Calculate the correct value for the metric
@@ -129,7 +182,9 @@ with Transaction(doc, "Update Health Check Values") as trans:
                 # Normalize the value based on the metric's range
                 if metric_name in normalization_ranges:
                     min_val, max_val = normalization_ranges[metric_name]
-                    normalized_value = normalize_value(calculated_value, min_val, max_val)
+                    normalized_value = normalize_value(
+                        calculated_value, min_val, max_val
+                    )
                     normalized_values.append(normalized_value)
 
             elif metric_name == "OVERALL":
@@ -152,4 +207,9 @@ with Transaction(doc, "Update Health Check Values") as trans:
     trans.Commit()
 
 # Final confirmation
-forms.alert("Health check values and 'OVERALL' updated successfully for family '{}'.".format(family_name), title="Health Check")
+forms.alert(
+    "Health check values and 'OVERALL' updated successfully for family '{}'.".format(
+        family_name
+    ),
+    title="Health Check",
+)

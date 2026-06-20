@@ -1,11 +1,15 @@
 import clr
-clr.AddReference('RevitServices')
-clr.AddReference('RevitAPI')
-clr.AddReference('RevitAPIUI')
 
-from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory, ViewSheet, RevitLinkInstance
+clr.AddReference("RevitServices")
+clr.AddReference("RevitAPI")
+clr.AddReference("RevitAPIUI")
+
+from Autodesk.Revit.DB import (
+    FilteredElementCollector,
+    BuiltInCategory,
+    RevitLinkInstance,
+)
 from pyrevit import forms
-from RevitServices.Persistence import DocumentManager
 from pyrevit import revit
 
 # Use pyRevit's way of getting the active document
@@ -15,25 +19,34 @@ if doc is None:
     forms.alert("Error: Could not retrieve the current Revit document.")
     raise Exception("Current document is None")
 
+
 # Function to get sheets from a document
 def get_sheets(doc, model_reference):
     if doc is None:
         forms.alert("Error: Document is None for model: {}".format(model_reference))
         return []  # Return empty list if the document is None
-    
+
     try:
-        sheets = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Sheets).WhereElementIsNotElementType().ToElements()
+        sheets = (
+            FilteredElementCollector(doc)
+            .OfCategory(BuiltInCategory.OST_Sheets)
+            .WhereElementIsNotElementType()
+            .ToElements()
+        )
         sheet_list = []
-        
+
         for sheet in sheets:
             sheet_number = sheet.SheetNumber
             sheet_name = sheet.Name
             sheet_list.append([model_reference, sheet_number, sheet_name])
-        
+
         return sheet_list
     except Exception as e:
-        forms.alert("Error: Failed to collect sheets from '{}': {}".format(model_reference, e))
+        forms.alert(
+            "Error: Failed to collect sheets from '{}': {}".format(model_reference, e)
+        )
         return []
+
 
 output_data = []
 
@@ -51,9 +64,15 @@ for link in link_instances:
             linked_model_reference = link.Name
             output_data.extend(get_sheets(link_doc, linked_model_reference))
         else:
-            forms.alert("Warning: Linked model document for '{}' could not be found or accessed.".format(link.Name))
+            forms.alert(
+                "Warning: Linked model document for '{}' could not be found or accessed.".format(
+                    link.Name
+                )
+            )
     except Exception as e:
-        forms.alert("Error: Error processing linked model '{}': {}".format(link.Name, e))
+        forms.alert(
+            "Error: Error processing linked model '{}': {}".format(link.Name, e)
+        )
 
 # Prepare output text
 output_text = "Model Reference\tSheet Number\tSheet Name\n"

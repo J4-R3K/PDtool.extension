@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-__title__ = 'List Filters in View'
-__author__ = 'Jarek Wityk @ PD'
+__title__ = "List Filters in View"
+__author__ = "Jarek Wityk @ PD"
 
 import clr
 import os
@@ -14,7 +14,12 @@ doc = revit.doc
 
 # ----------------------------------------
 # 1. Collect views
-views = FilteredElementCollector(doc).OfClass(View).WhereElementIsNotElementType().ToElements()
+views = (
+    FilteredElementCollector(doc)
+    .OfClass(View)
+    .WhereElementIsNotElementType()
+    .ToElements()
+)
 named_views = sorted([v for v in views if v.Name], key=lambda v: v.Name)
 
 view_map = {}
@@ -25,9 +30,7 @@ for v in named_views:
     view_map[label] = v
 
 selected_label = forms.SelectFromList.show(
-    view_labels,
-    multiselect=False,
-    title="Select View or Template to List Filters"
+    view_labels, multiselect=False, title="Select View or Template to List Filters"
 )
 
 if not selected_label:
@@ -51,7 +54,9 @@ for fid in filter_ids:
 
 # ----------------------------------------
 # 3. Save to text file
-temp_path = os.path.join(tempfile.gettempdir(), "filters_in_{}.txt".format(view.Name.replace(" ", "_")))
+temp_path = os.path.join(
+    tempfile.gettempdir(), "filters_in_{}.txt".format(view.Name.replace(" ", "_"))
+)
 with open(temp_path, "w") as f:
     f.write("\n".join(lines))
 

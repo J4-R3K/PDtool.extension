@@ -1,0 +1,9 @@
+title: Acquire
+tooltip: Acquire shared coordinates from selected Revit links into the active model. Cloud worksharing supports Acquire, not Publish.
+author: pyRevit Script Generator
+tab: Coordination
+panel: Coordinates
+pushbutton:
+  - name: AcquireCoordinatesFromLinks
+    script: script.py
+    tooltip: Acquire coordinates from selected links (ACC/BIM 360 compatible).
