@@ -175,9 +175,11 @@ def transfer_parameter_values(linked_doc, param_names):
                 target_param.Set(val)
                 print("Project parameter '{}' set to double '{}'.".format(name, val))
             elif st == StorageType.ElementId:
-                val = source_param.AsElementId()
-                target_param.Set(val)
-                print("Project parameter '{}' set to ElementId '{}'.".format(name, val))
+                print(
+                    "Parameter '{}' stores an ElementId, which is specific to the linked document. Skipped (not transferred).".format(
+                        name
+                    )
+                )
             else:
                 print(
                     "Unsupported storage type for parameter '{}'. Skipping.".format(

@@ -50,7 +50,7 @@ lines.append("Filters applied to view '{}':\n".format(view.Name))
 
 for fid in filter_ids:
     fe = doc.GetElement(fid)
-    lines.append("- {}".format(fe.Name if fe else "Unknown Filter"))
+    lines.append("- {}".format(Element.Name.GetValue(fe) if fe else "Unknown Filter"))
 
 # ----------------------------------------
 # 3. Save to text file

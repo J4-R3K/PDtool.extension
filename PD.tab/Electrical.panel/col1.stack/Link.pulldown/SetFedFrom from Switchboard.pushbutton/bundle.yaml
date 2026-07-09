@@ -1,0 +1,19 @@
+title: |-
+  CableID:
+  Set FedFrom
+  from Switchboard
+
+tooltip: |-
+  Pick a PD_DET_SC_Switchboard family instance, then pick one or more
+  PD_DET_SC_CableID tag instances. The tool reads 'PD_DATe_ID1' from
+  the Switchboard and writes it into 'PD_DATe_FedFrom' on every
+  selected CableID tag. Family version suffixes such as '_v24.1.1' are
+  ignored so the tool keeps working with future family revisions.
+
+description: Update PD_DATe_FedFrom on PD_DET_SC_CableID tags from a picked PD_DET_SC_Switchboard (source PD_DATe_ID1).
+
+authors:
+  - Jarek Wityk
+
+icon: icon.png
+command: script.py

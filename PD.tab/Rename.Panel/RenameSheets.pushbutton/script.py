@@ -93,20 +93,18 @@ try:
 
         elif rename_option == "Sheet Number":
             # Rename Sheet Number
-            sheet_number_param = sheet.LookupParameter("Sheet Number")
-            if sheet_number_param:
-                current_value = sheet_number_param.AsString()
-                if text_to_replace:
-                    # Replace text in the sheet number
-                    if text_to_replace in current_value:
-                        new_number = current_value.replace(
-                            text_to_replace, replacement_text
-                        )
-                        sheet_number_param.Set(new_number)
-                else:
-                    # Add prefix if no text to replace
-                    new_number = replacement_text + current_value
-                    sheet_number_param.Set(new_number)
+            current_value = sheet.SheetNumber
+            if text_to_replace:
+                # Replace text in the sheet number
+                if text_to_replace in current_value:
+                    new_number = current_value.replace(
+                        text_to_replace, replacement_text
+                    )
+                    sheet.SheetNumber = new_number
+            else:
+                # Add prefix if no text to replace
+                new_number = replacement_text + current_value
+                sheet.SheetNumber = new_number
 
     # Commit the transaction
     t.Commit()

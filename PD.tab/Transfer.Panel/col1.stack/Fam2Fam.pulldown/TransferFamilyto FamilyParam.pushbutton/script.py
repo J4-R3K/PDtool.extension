@@ -148,7 +148,11 @@ try:
             add_param(host_mgr, name, is_inst, p, rev_major)
             if formula:
                 try:
-                    host_mgr.SetFormula(host_mgr.Parameters[name], formula)
+                    new_param = host_mgr.get_Parameter(name)
+                    if new_param is not None:
+                        host_mgr.SetFormula(new_param, formula)
+                    else:
+                        skipped.append((name, "Formula skipped"))
                 except Exception:
                     skipped.append((name, "Formula skipped"))
             added.append(name)

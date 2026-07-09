@@ -1,0 +1,20 @@
+title: |-
+  CableID:
+  Set FedTo
+  from Destination
+
+tooltip: |-
+  Pick one or more PD_DET_SC_CableID tag instances, then pick a single
+  destination Detail Item (any family) that exposes the 'PD_DATe_ID1'
+  parameter. The tool reads 'PD_DATe_ID1' from the destination and
+  writes it into 'PD_DATe_FedTo' on every selected CableID tag. The
+  picker accepts any FamilyInstance with that parameter, so it works
+  across all current and future PD families.
+
+description: Update PD_DATe_FedTo on PD_DET_SC_CableID tags from a picked PD_DET_SC_* destination family (source PD_DATe_ID1).
+
+authors:
+  - Jarek Wityk
+
+icon: icon.png
+command: script.py

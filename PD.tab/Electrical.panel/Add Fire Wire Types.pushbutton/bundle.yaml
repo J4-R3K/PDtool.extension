@@ -1,0 +1,25 @@
+title: |-
+  Add Fire
+  Wire Types
+
+tooltip: |-
+  Creates the FP200+, FP400 and FP100 fire-rated wiring types in
+  Electrical Settings by cloning existing types (so each inherits the
+  correct Material/ampacity, temperature rating, insulation and conduit):
+    FP200+  <- FP200   (SP_A,B,C,E / TP_A,B,C,E)  - 8 types
+    FP400   <- FP600S  (SP_C,D,E / TP_C,D,E)      - 6 types
+    FP100   <- PVC single-core in conduit, ref A/B - 4 types
+  ADDS-ONLY: never edits or deletes existing types. Safe to RE-RUN
+  (skips any that already exist) and REVERSIBLE (just delete them).
+  Run on a COPY of the model first, then check
+  Electrical Settings > Wiring > Wiring Types.
+  Basis verified against BS 8519 + FP datasheets. Edit CLONE_PLAN in
+  script.py to change which types/combos are created.
+
+description: Add FP200+, FP400 and FP100 fire-rated wiring types by cloning FP200 / FP600S / PVC.
+
+authors:
+  - Jarek Wityk
+
+icon: icon.png
+command: script.py

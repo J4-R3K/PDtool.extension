@@ -23,6 +23,7 @@ from Autodesk.Revit.DB import (
     FilteredElementCollector,
     View,
     Transaction,
+    Element,
 )
 from pyrevit import revit, forms
 
@@ -72,12 +73,12 @@ def transfer_filters(source_views, target_views):
                         override_settings = source_view.GetFilterOverrides(filter_id)
                         try:
                             target_view.SetFilterOverrides(filter_id, override_settings)
-                        except:
+                        except Exception:
                             # If override fails, skip this filter
-                            skipped_filters.append(doc.GetElement(filter_id).Name)
+                            skipped_filters.append(Element.Name.GetValue(doc.GetElement(filter_id)))
                             continue
 
-                        copied_filters.append(doc.GetElement(filter_id).Name)
+                        copied_filters.append(Element.Name.GetValue(doc.GetElement(filter_id)))
 
         trans.Commit()
 

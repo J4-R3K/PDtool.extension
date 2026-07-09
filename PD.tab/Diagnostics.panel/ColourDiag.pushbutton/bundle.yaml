@@ -1,0 +1,10 @@
+title: Colour Diagnostic
+tooltip: Dump the active view's space/room colour source (scheme vs filters vs link) and overrides to C:\Dev\revit_view_diag.txt.
+author: PD
+tab: Views
+panel: Diagnostics
+pushbutton:
+  title: Colour Source Diagnostic
+  tooltip: Identify why space/room colour shows on screen but will not plot. Open the RCP view, then run.
+  script: script.py
+  allowpanel: true

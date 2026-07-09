@@ -1,0 +1,22 @@
+title: |-
+  Rename LSF
+  to LSZH
+
+tooltip: |-
+  Renames existing wiring TYPES from 'LSF' to 'LSZH' (terminology fix):
+    LSF/LSF (...)  ->  LSZH/LSZH (...)
+    SWA/LSF (...)  ->  SWA/LSZH (...)
+    LSF (...)      ->  LSZH (...)
+  'LSF' (Low Smoke & Fume) is modified PVC and still halogenated; the
+  BS 7211 / BS 6724 cables are actually LSZH / halogen-free.
+  Renaming a wire type keeps every circuit connected (circuits reference
+  the element, not the name). Safe to RE-RUN and reversible.
+  Run on a COPY first, then check Electrical Settings > Wiring > Wiring Types.
+
+description: Rename LSF / LSF-LSF / SWA-LSF wiring types to LSZH (halogen-free terminology fix).
+
+authors:
+  - Jarek Wityk
+
+icon: icon.png
+command: script.py

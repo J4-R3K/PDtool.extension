@@ -30,13 +30,13 @@ def get_view_templates(doc):
 
 def get_filters(doc):
     return [
-        f.Name
+        DB.Element.Name.GetValue(f)
         for f in DB.FilteredElementCollector(doc).OfClass(DB.ParameterFilterElement)
     ]
 
 
 def get_schedules(doc):
-    return [s.Name for s in DB.FilteredElementCollector(doc).OfClass(DB.ViewSchedule)]
+    return [DB.Element.Name.GetValue(s) for s in DB.FilteredElementCollector(doc).OfClass(DB.ViewSchedule)]
 
 
 def get_project_parameters(doc):
@@ -175,12 +175,16 @@ if not os.path.exists(folder):
 
 # ------------------------------------------------------------
 # Write to CSV (IronPython-safe)
+def _enc(v):
+    return v.encode('utf-8') if isinstance(v, unicode) else v
+
+
 try:
     with open(save_path, "wb") as csvfile:
         writer = csv.writer(csvfile)
         writer.writerow(["Category", "Name", "Type"])
         for row in export_data:
-            writer.writerow(row)
+            writer.writerow([_enc(v) for v in row])
 except IOError as e:
     forms.alert(
         "⚠️ Could not save the file.\n\n{}\n\nClose the file if it is open.".format(

@@ -51,9 +51,15 @@ used_ids = set(
 # 3. Output all types with usage tag
 output.print_md("Found **{}** viewport type(s):\n".format(len(viewport_types)))
 
-for t in sorted(viewport_types, key=lambda x: x.Name.lower()):
+
+def _type_name(t):
     name_param = t.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM)
-    name = name_param.AsString() if name_param else "(Unnamed)"
+    name = name_param.AsString() if name_param else None
+    return name if name else "(Unnamed)"
+
+
+for t in sorted(viewport_types, key=lambda x: _type_name(x).lower()):
+    name = _type_name(t)
     is_used = "✔ In Use" if t.Id.IntegerValue in used_ids else "❌ Not Used"
     output.print_md("- **{}** — `{}`".format(name, is_used))
 

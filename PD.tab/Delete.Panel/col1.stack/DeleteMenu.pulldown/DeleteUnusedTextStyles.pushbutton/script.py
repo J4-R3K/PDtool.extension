@@ -49,7 +49,8 @@ items = []
 unused_map = {}
 
 for ttype in text_types:
-    name = ttype.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM).AsString()
+    name_param = ttype.get_Parameter(BuiltInParameter.SYMBOL_NAME_PARAM)
+    name = name_param.AsString() if name_param else Element.Name.GetValue(ttype)
     if not name:
         continue
 

@@ -28,6 +28,7 @@ from Autodesk.Revit.DB import (
     RevitLinkInstance,
     ElementId,
     ElementTransformUtils,
+    Element,
 )
 from pyrevit import revit, forms
 from System.Collections.Generic import List  # For ICollection[ElementId] compatibility
@@ -76,7 +77,7 @@ def select_legends(linked_doc):
         forms.alert("No Legends found in the selected linked model.")
         return []
 
-    legend_names = [v.Name for v in legend_views]
+    legend_names = [Element.Name.GetValue(v) for v in legend_views]
 
     selected_legends = forms.SelectFromList.show(
         sorted(legend_names),
@@ -85,7 +86,7 @@ def select_legends(linked_doc):
         button_name="Transfer",
     )
 
-    return [v for v in legend_views if v.Name in selected_legends]
+    return [v for v in legend_views if Element.Name.GetValue(v) in selected_legends]
 
 
 # Step 3: Transfer Legends to main model
@@ -107,29 +108,44 @@ def transfer_legends():
         .ToElements()
     )
     existing_legend_names = [
-        v.Name for v in existing_legends if v.ViewType == ViewType.Legend
+        Element.Name.GetValue(v) for v in existing_legends if v.ViewType == ViewType.Legend
     ]
+
+    copied_legends = []
+    failed_legends = []
 
     with Transaction(doc, "Transfer Selected Legends") as trans:
         trans.Start()
 
         for legend in legends_to_copy:
-            if legend.Name in existing_legend_names:
-                print("Legend '{}' already exists. Skipping...".format(legend.Name))
+            legend_name = Element.Name.GetValue(legend)
+            if legend_name in existing_legend_names:
+                print("Legend '{}' already exists. Skipping...".format(legend_name))
                 continue
 
             element_ids_to_copy = List[ElementId]([legend.Id])
 
-            copied_ids = ElementTransformUtils.CopyElements(
-                linked_doc, element_ids_to_copy, doc, None, None
-            )
-
-            if copied_ids.Count > 0:
-                print("Successfully copied Legend '{}'.".format(legend.Name))
-            else:
-                print("Failed to copy Legend '{}'.".format(legend.Name))
+            try:
+                copied_ids = ElementTransformUtils.CopyElements(
+                    linked_doc, element_ids_to_copy, doc, None, None
+                )
+                if copied_ids is not None and copied_ids.Count > 0:
+                    copied_legends.append(legend_name)
+                else:
+                    failed_legends.append((legend_name, "No elements copied"))
+            except Exception as ex:
+                failed_legends.append((legend_name, str(ex)))
 
         trans.Commit()
+
+    if copied_legends:
+        print("Successfully copied Legends:")
+        for name in copied_legends:
+            print("- {}".format(name))
+    if failed_legends:
+        print("Failed to copy Legends:")
+        for name, msg in failed_legends:
+            print("- {}: {}".format(name, msg))
 
     print("Legend transfer complete.")
 

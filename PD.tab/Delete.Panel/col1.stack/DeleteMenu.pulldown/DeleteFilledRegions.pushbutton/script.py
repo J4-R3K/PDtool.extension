@@ -58,7 +58,7 @@ for frt in region_types:
     label = (
         "{}  —  [UNUSED]".format(name)
         if frt.Id.IntegerValue not in used_ids
-        else "{}  —  (in use)"
+        else "{}  —  (in use)".format(name)
     )
     if frt.Id.IntegerValue not in used_ids:
         unused_map[label] = frt

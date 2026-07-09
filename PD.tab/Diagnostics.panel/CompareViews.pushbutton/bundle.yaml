@@ -1,0 +1,10 @@
+title: Compare Views
+tooltip: Side-by-side comparison of view visibility settings (VG, filters, worksets, phases, links). Optional patch A → B.
+author: pyRevit Script Generator
+tab: Views
+panel: Diagnostics
+pushbutton:
+  title: Compare Views — Side-by-Side
+  tooltip: Compare two views side-by-side and patch selected differences (template-aware).
+  script: script.py
+  allowpanel: true

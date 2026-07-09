@@ -148,11 +148,20 @@ def transfer_browser_organizations():
             element_ids_to_copy = List[ElementId]([browser_org.Id])
 
             # Copy the BrowserOrganization to the main document
-            copied_ids = ElementTransformUtils.CopyElements(
-                linked_doc, element_ids_to_copy, doc, None, None
-            )
+            try:
+                copied_ids = ElementTransformUtils.CopyElements(
+                    linked_doc, element_ids_to_copy, doc, None, None
+                )
+            except Exception as ex:
+                trans.RollBack()
+                forms.alert(
+                    "Failed to copy Project Browser setting '{}':\n{}\n\nNo changes were made.".format(
+                        org_name, str(ex)
+                    )
+                )
+                return
 
-            if copied_ids:
+            if copied_ids is not None and copied_ids.Count > 0:
                 print(
                     "Successfully copied Project Browser setting '{}' to the main document.".format(
                         org_name

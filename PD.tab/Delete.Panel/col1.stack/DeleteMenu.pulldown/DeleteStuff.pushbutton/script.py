@@ -28,6 +28,7 @@ clr.AddReference("RevitAPIUI")
 from Autodesk.Revit.DB import *
 from Autodesk.Revit.UI import *
 from Autodesk.Revit.UI.Selection import *
+from Autodesk.Revit.Exceptions import OperationCanceledException
 from pyrevit import revit, DB
 
 # Get the current UIDocument and Document from the revit module
@@ -52,6 +53,10 @@ def delete_selected_element():
                 doc.Delete(selected_element_id)
                 trans.Commit()
                 TaskDialog.Show("Success", "Element deleted successfully.")
+        except OperationCanceledException:
+            # User pressed ESC - exit quietly
+            if trans.GetStatus() == DB.TransactionStatus.Started:
+                trans.RollBack()
         except Exception as e:
             # If an error occurs, cancel the transaction and show an error dialog
             if trans.GetStatus() == DB.TransactionStatus.Started:

@@ -1,0 +1,9 @@
+title: "Find Panel"
+tooltip: "Zoom to and select the Electrical Equipment panel linked to the selected board symbol."
+author: "Jarek Wityk"
+tab: "PD"
+panel: "Associate"
+pushbutton: "FindLinkedPanel"
+script: "script.py"
+context:
+  - selection

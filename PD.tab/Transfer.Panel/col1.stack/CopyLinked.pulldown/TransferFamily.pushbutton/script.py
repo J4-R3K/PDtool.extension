@@ -27,6 +27,7 @@ from Autodesk.Revit.DB import (
     ElementTransformUtils,
     RevitLinkInstance,
     ElementId,
+    Element,
 )
 from pyrevit import revit, forms
 from System.Collections.Generic import List  # Import for ICollection compatibility
@@ -63,7 +64,7 @@ def select_linked_model():
 # Get all families in the selected linked model
 def select_families(linked_doc):
     families = FilteredElementCollector(linked_doc).OfClass(Family).ToElements()
-    family_names = [fam.Name for fam in families]
+    family_names = [Element.Name.GetValue(fam) for fam in families]
 
     if not family_names:
         forms.alert("No families found in the selected model.")
@@ -76,7 +77,7 @@ def select_families(linked_doc):
         title="Select Families",
         button_name="Transfer",
     )
-    return [fam for fam in families if fam.Name in selected_families]
+    return [fam for fam in families if Element.Name.GetValue(fam) in selected_families]
 
 
 # Main function to transfer selected families and their types from a linked model
@@ -102,9 +103,9 @@ def transfer_families():
             existing_families = (
                 FilteredElementCollector(doc).OfClass(Family).ToElements()
             )
-            existing_family_names = [ef.Name for ef in existing_families]
+            existing_family_names = [Element.Name.GetValue(ef) for ef in existing_families]
 
-            if family.Name in existing_family_names:
+            if Element.Name.GetValue(family) in existing_family_names:
                 print(
                     "Family '{}' already exists in the main document. Skipping...".format(
                         family.Name
@@ -120,12 +121,6 @@ def transfer_families():
                 fs for fs in family_symbols if fs.Family.Id == family.Id
             ]
 
-            # Ensure FamilySymbols are activated (loaded types)
-            for symbol in family_symbols_to_copy:
-                if not symbol.IsActive:
-                    symbol.Activate()
-                    linked_doc.Regenerate()  # Regenerate the document to reflect the activation
-
             # Combine family and its symbols to copy
             element_ids_to_copy = List[ElementId]()
             element_ids_to_copy.Add(family.Id)
@@ -136,6 +131,12 @@ def transfer_families():
             copied_ids = ElementTransformUtils.CopyElements(
                 linked_doc, element_ids_to_copy, doc, None, None
             )
+
+            # Ensure copied FamilySymbols are activated in the main document
+            for cid in copied_ids:
+                sym = doc.GetElement(cid)
+                if isinstance(sym, FamilySymbol) and not sym.IsActive:
+                    sym.Activate()
 
             if copied_ids.Count > 0:
                 print(

@@ -16,6 +16,8 @@ def _upper(name):
 
 def _camel(name):
     string = re.sub(r"(_|-)+", " ", name).title().replace(" ", "")
+    if not string:
+        return string
     return string[0].lower() + string[1:]
 
 

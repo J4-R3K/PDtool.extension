@@ -43,7 +43,7 @@ if selected_views:
             dupop = DB.ViewDuplicateOption.WithDetailing
         if selected_option == "WITHOUT Detailing":
             dupop = DB.ViewDuplicateOption.Duplicate
-        if selected_option == "As Dependent":
+        if selected_option == "AS Dependent":
             dupop = DB.ViewDuplicateOption.AsDependent
         dup_view_ids = duplicate_views(selected_views, dupop)
         if dup_view_ids:

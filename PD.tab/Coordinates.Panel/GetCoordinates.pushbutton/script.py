@@ -3,6 +3,7 @@ from Autodesk.Revit.DB import (
     BasePoint,
     BuiltInParameter,
     RevitLinkInstance,
+    Element,
 )
 from pyrevit import revit, forms
 import tempfile
@@ -22,6 +23,7 @@ def get_base_points_from_doc(doc, model_name="Current Model"):
 
     output = "Model: {}\n".format(model_name)
     for i, bp in enumerate(base_points, start=1):
+        label = "Base Point"
         try:
             # Retrieve X, Y, Z coordinates and convert from feet to millimeters
             bp_x_param = bp.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM)
@@ -106,12 +108,12 @@ def get_base_points_from_all_linked_models(doc):
     for link in link_instances:
         link_doc = link.GetLinkDocument()  # Get the linked document
         if link_doc:
-            model_name = link.Name  # Use the link's name as the model name
+            model_name = Element.Name.GetValue(link)  # Use the link's name as the model name
             output += get_base_points_from_doc(link_doc, model_name)
         else:
             output += (
                 "Model: {}\nLinked model document could not be accessed.\n\n".format(
-                    link.Name
+                    Element.Name.GetValue(link)
                 )
             )
 

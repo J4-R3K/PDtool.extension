@@ -26,6 +26,7 @@ from Autodesk.Revit.DB import (
     ElementTransformUtils,
     RevitLinkInstance,
     ElementId,
+    Element,
 )
 from pyrevit import revit, forms
 from System.Collections.Generic import List  # Import List for ICollection compatibility
@@ -67,7 +68,7 @@ def select_scope_boxes(linked_doc):
         .WhereElementIsNotElementType()
         .ToElements()
     )
-    scope_box_names = [sb.Name for sb in scope_boxes]
+    scope_box_names = [Element.Name.GetValue(sb) for sb in scope_boxes]
 
     if not scope_box_names:
         forms.alert("No scope boxes found in the selected model.")
@@ -80,7 +81,7 @@ def select_scope_boxes(linked_doc):
         title="Select Scope Boxes",
         button_name="Transfer",
     )
-    return [sb for sb in scope_boxes if sb.Name in selected_scope_boxes]
+    return [sb for sb in scope_boxes if Element.Name.GetValue(sb) in selected_scope_boxes]
 
 
 # Main function to transfer selected scope boxes from a linked model
@@ -110,7 +111,9 @@ def transfer_scope_boxes():
                 .ToElements()
             )
             existing_scope_box = [
-                esb for esb in existing_scope_box if esb.Name == scope_box.Name
+                esb
+                for esb in existing_scope_box
+                if Element.Name.GetValue(esb) == Element.Name.GetValue(scope_box)
             ]
 
             if existing_scope_box:

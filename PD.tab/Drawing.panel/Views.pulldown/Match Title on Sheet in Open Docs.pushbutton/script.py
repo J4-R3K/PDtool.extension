@@ -14,6 +14,8 @@ def collect_views(input_doc):
 curdoc_views = collect_views(revit.doc)
 curdoc_views_dict = {revit.query.get_name(v): v for v in curdoc_views}
 
+skipped = 0
+
 for open_doc in revit.docs:
     if open_doc is not revit.doc and not open_doc.IsLinked:
         views = collect_views(open_doc)
@@ -40,4 +42,11 @@ for open_doc in revit.docs:
                             )
                         )
 
-                        tos_param.Set(orig_tos_param.AsString())
+                        val = orig_tos_param.AsString()
+                        if val is None:
+                            skipped += 1
+                        else:
+                            tos_param.Set(val)
+
+if skipped:
+    print("Skipped {} view(s) with empty Title on Sheet.".format(skipped))

@@ -1,0 +1,27 @@
+title: |-
+  CableID:
+  Set from
+  Protective Device
+
+tooltip: |-
+  Pick a single PD_DET_SC_CableID tag, then pick a single source family
+  instance (typically PD_DET_SC_ProtectiveDevice, but any family carrying
+  the PD_DATe_* parameters is accepted). Copies up to 12 parameters from
+  the source to the tag: PD_DATe_Rating, Description1, DeviceNo1,
+  DeviceType1, FaultRating1, FrameRating1, ID2, IsMeter, NoOfPolesINT1,
+  TripRating1, TripSetting1, TripType1.
+  IMPORTANT: 'PD_DATe_ID1' on the cable tag is intentionally PRESERVED -
+  it is the cable's own identifier and is never overwritten. Only
+  parameters present on the source are copied; missing ones are skipped
+  silently. Family version suffixes such as '_v24.1.2' are ignored.
+  Storage types (text, integer, number, ElementId) are matched
+  automatically; mismatched or read-only params are reported in the
+  output panel.
+
+description: Copy 12 PD_DATe_* parameters from PD_DET_SC_ProtectiveDevice onto a single PD_DET_SC_CableID tag (PD_DATe_ID1 on the tag is preserved).
+
+authors:
+  - Jarek Wityk
+
+icon: icon.png
+command: script.py

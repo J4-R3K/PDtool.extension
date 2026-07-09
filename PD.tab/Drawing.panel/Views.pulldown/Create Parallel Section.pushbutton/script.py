@@ -30,7 +30,7 @@ def is_valid_mep_element(el):
         return el.Category and el.Category.Id.IntegerValue in [
             int(c) for c in VALID_CATEGORIES
         ]
-    except:
+    except Exception:
         return False
 
 

@@ -72,11 +72,20 @@ def copy_parameters(source, target):
 
         if src_param and tgt_param and src_param.HasValue:
             try:
-                tgt_param.Set(
-                    src_param.AsValueString()
-                    if src_param.StorageType != StorageType.Integer
-                    else src_param.AsInteger()
-                )
+                st = src_param.StorageType
+                if st == StorageType.Integer:
+                    tgt_param.Set(src_param.AsInteger())
+                elif st == StorageType.Double:
+                    tgt_param.Set(src_param.AsDouble())
+                elif st == StorageType.String:
+                    tgt_param.Set(src_param.AsString() or "")
+                else:
+                    output.print_md(
+                        "*Skipping `{}` – ElementId/unsupported storage type*".format(
+                            param_name
+                        )
+                    )
+                    continue
                 copied.append(param_name)
             except Exception as e:
                 output.print_md(

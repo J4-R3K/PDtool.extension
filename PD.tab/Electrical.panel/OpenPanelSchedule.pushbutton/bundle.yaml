@@ -1,0 +1,10 @@
+title: "Open DB"
+tooltip: "Open or create the Panel Schedule for the panel linked to the selected board symbol."
+author: "Jarek Wityk"
+tab: "PD"
+panel: "Associate"
+pushbutton: "OpenPanelSchedule"
+script: "script.py"
+context:
+  - selection
+  - active-drafting-view

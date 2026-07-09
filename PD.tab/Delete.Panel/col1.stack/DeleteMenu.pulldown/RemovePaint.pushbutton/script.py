@@ -40,23 +40,22 @@ def process_geometry(geometry_element, element_id):
         if isinstance(geometry_object, Solid):
             for face in geometry_object.Faces:
                 processed_faces += 1
-                face_id = face.Id
                 doc.RemovePaint(element_id, face)
-                doc.Regenerate()  # Force a regeneration after removal attempt
                 if not doc.IsPainted(
                     element_id, face
                 ):  # Check if paint was successfully removed
                     out.print_html(
-                        "<p>Confirmed paint removal from face of element ID: <b>{0}</b>, Face ID: <b>{1}</b></p>".format(
-                            element_id, face_id
+                        "<p>Confirmed paint removal from face of element ID: <b>{0}</b>, Face #<b>{1}</b></p>".format(
+                            element_id, processed_faces
                         )
                     )
                 else:
                     out.print_html(
-                        "<p>Failed to remove paint from face of element ID: <b>{0}</b>, Face ID: <b>{1}</b></p>".format(
-                            element_id, face_id
+                        "<p>Failed to remove paint from face of element ID: <b>{0}</b>, Face #<b>{1}</b></p>".format(
+                            element_id, processed_faces
                         )
                     )
+    doc.Regenerate()  # Force a regeneration once per element
     return processed_faces
 
 

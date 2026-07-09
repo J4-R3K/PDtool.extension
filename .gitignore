@@ -34,6 +34,15 @@
 !/PD.tab/Transfer.Panel/
 !/PD.tab/Transfer.Panel/**
 
+!/PD.tab/Electrical.panel/
+!/PD.tab/Electrical.panel/**
+
+!/PD.tab/Create.panel/
+!/PD.tab/Create.panel/**
+
+!/PD.tab/Diagnostics.panel/
+!/PD.tab/Diagnostics.panel/**
+
 
 !/.gitignore
 !/README.md

@@ -1,0 +1,10 @@
+title: Colour RCP Spaces
+tooltip: Bake Space colours (from PD_IsSpace_Litecom filters) into plottable Filled Regions so they print in a ceiling plan. Re-runnable. Run with the RCP view active.
+author: PD
+tab: Views
+panel: Diagnostics
+pushbutton:
+  title: Colour RCP Spaces
+  tooltip: For each Space, create a solid Filled Region in its Litecom colour. Regions plot in RCP views. Send to Back after running.
+  script: script.py
+  allowpanel: true

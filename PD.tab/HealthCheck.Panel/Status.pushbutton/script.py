@@ -109,10 +109,8 @@ def calculate_metric_value(metric_name):
         in_place_families = [f for f in all_families if f.IsInPlace]
         return len(in_place_families)
     elif metric_name == "LINE STYLES":
-        line_patterns = (
-            FilteredElementCollector(doc).OfClass(LinePatternElement).ToElements()
-        )
-        return len(line_patterns)
+        lines_category = doc.Settings.Categories.get_Item(BuiltInCategory.OST_Lines)
+        return lines_category.SubCategories.Size
     elif metric_name == "FILL PATTERNS":
         fill_patterns = (
             FilteredElementCollector(doc).OfClass(FillPatternElement).ToElements()
@@ -147,9 +145,14 @@ family_instances = (
     .WhereElementIsNotElementType()
     .ToElements()
 )
-family_instances = [
-    inst for inst in family_instances if inst.Symbol.Family.Name == family_name
-]
+def _is_gauge_instance(inst):
+    try:
+        return hasattr(inst, "Symbol") and inst.Symbol.Family.Name == family_name
+    except Exception:
+        return False
+
+
+family_instances = [inst for inst in family_instances if _is_gauge_instance(inst)]
 
 # List to accumulate normalized values
 normalized_values = []

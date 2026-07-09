@@ -20,4 +20,8 @@ for v in views:
         print("\nID: {1}\t{0}".format(revit.query.get_name(v), str(v.Id).ljust(10)))
         filters = v.GetFilters()
         for fl in filters:
-            print("\t\t\tID: {0}\t{1}".format(fl, revit.doc.GetElement(fl).Name))
+            print(
+                "\t\t\tID: {0}\t{1}".format(
+                    fl, DB.Element.Name.GetValue(revit.doc.GetElement(fl))
+                )
+            )
