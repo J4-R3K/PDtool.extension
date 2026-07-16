@@ -1,0 +1,16 @@
+title: |-
+  Copy from
+  Link
+tooltip: Copy elements and settings from linked models into the host model.
+layout:
+  - CopyTrayByLevel
+  - CopyTray
+  - -----
+  - Copy Filters
+  - ViewTemplates
+  - CopyScopeBox
+  - Legend
+  - -----
+  - TransferBrowser
+  - TransferFamily
+  - ParaValues

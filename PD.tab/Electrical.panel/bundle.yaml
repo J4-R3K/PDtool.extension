@@ -1,0 +1,5 @@
+layout:
+  - OpenPanelSchedule
+  - FindLinkedPanel
+  - col1
+  - Wiring

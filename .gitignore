@@ -43,6 +43,9 @@
 !/PD.tab/Diagnostics.panel/
 !/PD.tab/Diagnostics.panel/**
 
+!/PD.tab/Share.panel/
+!/PD.tab/Share.panel/**
+
 
 !/.gitignore
 !/README.md

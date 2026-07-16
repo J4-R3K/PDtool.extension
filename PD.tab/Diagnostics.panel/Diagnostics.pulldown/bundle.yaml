@@ -1,0 +1,6 @@
+title: Diagnostics
+tooltip: Model diagnostics - colour checks, RCP space colours and view comparison.
+layout:
+  - ColourDiag
+  - ColourRCPSpaces
+  - CompareViews

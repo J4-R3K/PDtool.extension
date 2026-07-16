@@ -1,0 +1,6 @@
+title: "Prepare\nfor Share"
+content:
+  script: script.py
+  icon: icon.png
+tooltip: "Strip a PROJECT COPY down to the minimum needed for coordination sharing."
+help_url: ""
