@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 __title__   = "WireTag:: Batch Home Run & Tag"
-__doc__     = """Version = 1.1
-Date    = 20.12.2025
+__doc__     = """Version = 1.2
+Date    = 26.07.2026
 ________________________________________________________________
 Description:
 
@@ -13,6 +13,10 @@ Improvements vs previous batch:
 - Tag head placed directly "in front" of each item (along stub direction)
 - Leader ON + LeaderEndCondition Free (best effort) + leader end snapped to stub end
 
+v1.2: Multi-circuit support. If an item has two (or more) electrical connectors
+assigned to DIFFERENT circuits, a wire stub + tag is created for EACH circuit.
+Each additional stub is rotated 90deg in the view plane so wires/tags do not overlap.
+
 Author: Jarek Wityk
 """
 
@@ -21,8 +25,10 @@ import clr
 clr.AddReference('RevitAPI')
 clr.AddReference('RevitAPIUI')
 
+import math
+
 from Autodesk.Revit.DB import *
-from Autodesk.Revit.DB.Electrical import Wire, WireType, WiringType
+from Autodesk.Revit.DB.Electrical import Wire, WireType, WiringType, ElectricalSystem
 from Autodesk.Revit.UI.Selection import ObjectType, ISelectionFilter
 from System.Collections.Generic import List
 from pyrevit import revit, forms, script
@@ -90,24 +96,100 @@ def project_to_view_plane(vec, view_dir):
         return vec
 
 
-def get_electrical_connector(fi):
-    """Return first electrical connector found on FamilyInstance."""
+def get_electrical_connectors(fi):
+    """Return ALL electrical connectors found on FamilyInstance."""
+    result = []
     try:
         mep = getattr(fi, "MEPModel", None)
         if not mep:
-            return None
+            return result
         cm = getattr(mep, "ConnectorManager", None)
         if not cm:
-            return None
+            return result
         for c in cm.Connectors:
             try:
                 if c.Domain == Domain.DomainElectrical:
-                    return c
+                    result.append(c)
+            except:
+                pass
+    except:
+        pass
+    return result
+
+
+def get_electrical_connector(fi):
+    """First electrical connector (kept for the selection filter)."""
+    conns = get_electrical_connectors(fi)
+    return conns[0] if conns else None
+
+
+def get_connector_circuit(conn):
+    """Return the ElectricalSystem (circuit) this connector belongs to, or None."""
+    try:
+        for ref in conn.AllRefs:
+            try:
+                owner = ref.Owner
+                if isinstance(owner, ElectricalSystem):
+                    return owner
             except:
                 pass
     except:
         pass
     return None
+
+
+def pick_connectors_for_stubs(fi):
+    """
+    One connector per DISTINCT circuit.
+    - Connectors assigned to different circuits -> one stub+tag each.
+    - Two connectors on the SAME circuit -> only the first is used.
+    - No circuited connectors at all -> fall back to the first electrical
+      connector (previous single-connector behaviour).
+    Returns list of (connector, circuit_or_None).
+    """
+    conns = get_electrical_connectors(fi)
+    circuited = []
+    seen_ids = set()
+    for c in conns:
+        sysel = get_connector_circuit(c)
+        if sysel is None:
+            continue
+        try:
+            cid = sysel.Id.IntegerValue
+        except:
+            cid = None
+        if cid is not None and cid in seen_ids:
+            continue
+        if cid is not None:
+            seen_ids.add(cid)
+        circuited.append((c, sysel))
+    if circuited:
+        return circuited
+    if conns:
+        return [(conns[0], None)]
+    return []
+
+
+def circuit_label(sysel):
+    """Readable Panel/CircuitNumber label for reporting."""
+    if sysel is None:
+        return "no circuit"
+    pnl = None
+    num = None
+    try:
+        pnl = sysel.PanelName
+    except:
+        pass
+    try:
+        num = sysel.CircuitNumber
+    except:
+        pass
+    if pnl or num:
+        return "{}/{}".format(pnl or "?", num or "?")
+    try:
+        return sysel.Name
+    except:
+        return "circuit"
 
 
 def find_first_wire_type():
@@ -189,6 +271,25 @@ def get_family_isometric_direction(fi, conn, view):
         return None
 
 
+def rotate_in_view_plane(vec, vdir, angle_rad):
+    """Rotate vec about the view direction (keeps it in the view plane)."""
+    try:
+        cosv = math.cos(angle_rad)
+        sinv = math.sin(angle_rad)
+        rotated = vec.Multiply(cosv) + vdir.CrossProduct(vec).Multiply(sinv)
+        return normalize_xyz(rotated)
+    except:
+        return None
+
+
+def direction_for_index(base_dir, vdir, idx):
+    """First circuit keeps the base direction; each next one is rotated 90deg."""
+    if idx == 0 or vdir is None:
+        return base_dir
+    rot = rotate_in_view_plane(base_dir, vdir, (math.pi / 2.0) * idx)
+    return rot if rot else base_dir
+
+
 def compute_tag_head_offset_mm(view):
     """Distance in model mm that corresponds to ~TAG_PAPER_MM on paper."""
     try:
@@ -238,6 +339,8 @@ try_lengths_ft = [mm_to_ft(STUB_LEN_MM)] + [mm_to_ft(x) for x in FALLBACK_MM]
 # offset for tag head (per view)
 tag_head_off_mm = compute_tag_head_offset_mm(view)
 tag_head_off_ft = mm_to_ft(tag_head_off_mm)
+
+v_dir = normalize_xyz(view.ViewDirection)
 
 
 # ----------------------------
@@ -305,6 +408,7 @@ if tag_sym and (not tag_sym.IsActive):
 # ----------------------------
 ok_wires = 0
 ok_tags = 0
+multi_circuit_items = 0
 skipped = 0
 failures = []
 
@@ -322,110 +426,123 @@ for fi in valid_fis:
     tx.Start()
 
     try:
-        conn = get_electrical_connector(fi)
-        if conn is None:
+        conn_pairs = pick_connectors_for_stubs(fi)
+        if not conn_pairs:
             skipped += 1
             tx.RollBack()
             continue
 
-        try:
-            start_pt = conn.Origin
-        except:
-            skipped += 1
-            tx.RollBack()
-            continue
+        if len(conn_pairs) > 1:
+            multi_circuit_items += 1
 
-        direction_vec = get_family_isometric_direction(fi, conn, view)
-        if not direction_vec:
-            skipped += 1
-            tx.RollBack()
-            continue
+        item_wires = 0
 
-        # --- Create wire stub ---
-        created_wire = None
-        end_pt_used = None
-        last_err = None
-
-        for L in try_lengths_ft:
-            end_pt = start_pt + direction_vec.Multiply(L)
-
-            pts = List[XYZ]()
-            pts.Add(start_pt)
-            pts.Add(end_pt)
+        # --- One stub + tag per circuit ---
+        for idx, (conn, sysel) in enumerate(conn_pairs):
+            label = circuit_label(sysel)
 
             try:
-                created_wire = Wire.Create(doc, wire_type.Id, view.Id, WiringType.Arc, pts, conn, None)
-                if created_wire:
-                    end_pt_used = end_pt
-                    break
-            except Exception as e:
-                last_err = e
-                created_wire = None
+                start_pt = conn.Origin
+            except:
+                failures.append("FI {} [{}]: could not read connector origin".format(fi_id, label))
+                continue
 
-        if not created_wire:
-            raise Exception("Wire creation failed. Last error: {}".format(last_err))
+            base_dir = get_family_isometric_direction(fi, conn, view)
+            if not base_dir:
+                failures.append("FI {} [{}]: no valid automatic direction".format(fi_id, label))
+                continue
+            direction_vec = direction_for_index(base_dir, v_dir, idx)
 
-        ok_wires += 1
+            # --- Create wire stub ---
+            created_wire = None
+            end_pt_used = None
+            last_err = None
 
-        # --- Set parameter ---
-        if not set_param_text(created_wire, PARAM_NAME, PARAM_VALUE):
-            set_param_text(fi, PARAM_NAME, PARAM_VALUE)
+            for L in try_lengths_ft:
+                end_pt = start_pt + direction_vec.Multiply(L)
 
-        # --- Place tag (one per wire) ---
-        created_tag = None
+                pts = List[XYZ]()
+                pts.Add(start_pt)
+                pts.Add(end_pt)
 
-        wref = Reference(created_wire)
-
-        # Tag head = directly in front of the stub end (same direction)
-        # This prevents "far away" tags and keeps it per element.
-        head_pt = end_pt_used + direction_vec.Multiply(tag_head_off_ft)
-
-        try:
-            created_tag = IndependentTag.Create(
-                doc,
-                view.Id,
-                wref,
-                True,   # addLeader
-                TagMode.TM_ADDBY_CATEGORY,
-                TagOrientation.Horizontal,
-                head_pt  # initial point (we also force TagHeadPosition below)
-            )
-
-            # Set desired type
-            if created_tag and tag_sym:
                 try:
-                    created_tag.ChangeTypeId(tag_sym.Id)
+                    created_wire = Wire.Create(doc, wire_type.Id, view.Id, WiringType.Arc, pts, conn, None)
+                    if created_wire:
+                        end_pt_used = end_pt
+                        break
+                except Exception as e:
+                    last_err = e
+                    created_wire = None
+
+            if not created_wire:
+                failures.append("FI {} [{}]: wire failed ({})".format(fi_id, label, last_err))
+                continue
+
+            ok_wires += 1
+            item_wires += 1
+
+            # --- Set parameter ---
+            if not set_param_text(created_wire, PARAM_NAME, PARAM_VALUE):
+                set_param_text(fi, PARAM_NAME, PARAM_VALUE)
+
+            # --- Place tag (one per wire) ---
+            wref = Reference(created_wire)
+
+            # Tag head = directly in front of the stub end (same direction)
+            # This prevents "far away" tags and keeps it per element.
+            head_pt = end_pt_used + direction_vec.Multiply(tag_head_off_ft)
+
+            try:
+                created_tag = IndependentTag.Create(
+                    doc,
+                    view.Id,
+                    wref,
+                    True,   # addLeader
+                    TagMode.TM_ADDBY_CATEGORY,
+                    TagOrientation.Horizontal,
+                    head_pt  # initial point (we also force TagHeadPosition below)
+                )
+
+                # Set desired type
+                if created_tag and tag_sym:
+                    try:
+                        created_tag.ChangeTypeId(tag_sym.Id)
+                    except:
+                        pass
+
+                # Force tag head position (THIS is the key fix)
+                try:
+                    created_tag.TagHeadPosition = head_pt
                 except:
                     pass
 
-            # Force tag head position (THIS is the key fix)
-            try:
-                created_tag.TagHeadPosition = head_pt
-            except:
-                pass
+                # Ensure leader behavior
+                try:
+                    created_tag.HasLeader = True
+                except:
+                    pass
 
-            # Ensure leader behavior
-            try:
-                created_tag.HasLeader = True
-            except:
-                pass
+                try:
+                    created_tag.LeaderEndCondition = LeaderEndCondition.Free
+                except:
+                    pass
 
-            try:
-                created_tag.LeaderEndCondition = LeaderEndCondition.Free
-            except:
-                pass
+                # Snap leader end to wire free end
+                try:
+                    if end_pt_used:
+                        created_tag.SetLeaderEnd(wref, end_pt_used)
+                except:
+                    pass
 
-            # Snap leader end to wire free end
-            try:
-                if end_pt_used:
-                    created_tag.SetLeaderEnd(wref, end_pt_used)
-            except:
-                pass
+                ok_tags += 1
 
-            ok_tags += 1
+            except Exception as ex_tag:
+                failures.append("FI {} [{}]: tag failed ({})".format(fi_id, label, ex_tag))
 
-        except Exception as ex_tag:
-            failures.append("FI {}: tag failed ({})".format(fi_id, ex_tag))
+        if item_wires == 0:
+            skipped += 1
+            tx.RollBack()
+            continue
 
         tx.Commit()
 
@@ -443,6 +560,7 @@ tg.Assimilate()
 # ----------------------------
 msg = []
 msg.append("Selected: {}".format(len(valid_fis)))
+msg.append("Multi-circuit items: {}".format(multi_circuit_items))
 msg.append("Wires created: {}".format(ok_wires))
 msg.append("Tags placed: {}".format(ok_tags))
 msg.append("Skipped: {}".format(skipped))
