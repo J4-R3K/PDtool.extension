@@ -1,0 +1,4 @@
+title: "Replace\nin Text"
+tooltip: Find & replace a phrase inside text annotations (like Word). Preserves bold/italic formatting around the replaced text. Scope by model, view or selection, with a preview before applying.
+author: Jarek Wityk
+script: script.py

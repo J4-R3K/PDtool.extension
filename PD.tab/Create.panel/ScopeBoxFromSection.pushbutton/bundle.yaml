@@ -1,0 +1,6 @@
+title: "Scope Box\nfrom Section"
+content:
+  script: script.py
+  icon: icon.png
+tooltip: "Create a scope box matching a 3D view's section box. Guided: the tool marks the exact corners, posts the Scope Box command for a two-click draw, then run again to auto-rotate, position, rename and verify."
+help_url: ""
