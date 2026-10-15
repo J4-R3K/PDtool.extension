@@ -1,0 +1,6 @@
+title: Edit Values
+tooltip: Change one parameter (text, whole number or yes/no) on many elements at once. Set the value, add text before or after, find and replace, clear the value, change to capitals, copy from another parameter, or build from fields such as {Level} and {Room Number}. Every change is checked and listed before anything is written, and one Ctrl+Z undoes it.
+author: Jarek Wityk
+contexts:
+  - project
+script: script.py

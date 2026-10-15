@@ -1,0 +1,348 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Edit Values" Width="1180" Height="780" MinWidth="900" MinHeight="600"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
+        FontFamily="Segoe UI" FontSize="12" Background="#F3F4F6">
+  <Window.Resources>
+    <Style TargetType="Button">
+      <Setter Property="Padding" Value="10,3"/>
+      <Setter Property="Margin" Value="0,0,6,0"/>
+      <Setter Property="MinWidth" Value="60"/>
+    </Style>
+    <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="#1F4E79"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="MinWidth" Value="110"/>
+    </Style>
+    <Style x:Key="StepButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="Foreground" Value="#1F4E79"/>
+      <Setter Property="BorderBrush" Value="#B8C2CE"/>
+      <Setter Property="Padding" Value="14,5"/>
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style x:Key="StepArrow" TargetType="TextBlock">
+      <Setter Property="Text" Value="&#x203A;"/>
+      <Setter Property="FontSize" Value="18"/>
+      <Setter Property="Foreground" Value="#8A94A3"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Margin" Value="8,0"/>
+    </Style>
+    <Style x:Key="Instruction" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="#1F4E79"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+    <Style x:Key="Head" TargetType="TextBlock">
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Margin" Value="0,0,0,4"/>
+    </Style>
+    <Style x:Key="Note" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#4A5260"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style x:Key="Label" TargetType="TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Margin" Value="12,0,6,0"/>
+    </Style>
+    <Style x:Key="Grid" TargetType="DataGrid">
+      <Setter Property="AutoGenerateColumns" Value="False"/>
+      <Setter Property="CanUserAddRows" Value="False"/>
+      <Setter Property="CanUserDeleteRows" Value="False"/>
+      <Setter Property="CanUserReorderColumns" Value="False"/>
+      <Setter Property="HeadersVisibility" Value="Column"/>
+      <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+      <Setter Property="HorizontalGridLinesBrush" Value="#E3E6EA"/>
+      <Setter Property="RowHeight" Value="24"/>
+      <Setter Property="Background" Value="White"/>
+    </Style>
+  </Window.Resources>
+
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <!-- Steps -->
+    <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,0,0,8">
+      <Button x:Name="Step1" Content="1  Elements" Tag="0" Click="OnStep" Style="{StaticResource StepButton}"/>
+      <TextBlock Style="{StaticResource StepArrow}"/>
+      <Button x:Name="Step2" Content="2  Parameter and change" Tag="1" Click="OnStep" Style="{StaticResource StepButton}"/>
+      <TextBlock Style="{StaticResource StepArrow}"/>
+      <Button x:Name="Step3" Content="3  Check and apply" Tag="2" Click="OnStep" Style="{StaticResource StepButton}"/>
+      <TextBlock Style="{StaticResource StepArrow}"/>
+      <Button x:Name="Step4" Content="Results" Tag="3" Click="OnStep" Style="{StaticResource StepButton}" IsEnabled="False"/>
+    </StackPanel>
+
+    <TabControl x:Name="Tabs" Grid.Row="1" Padding="10" Background="White" BorderBrush="#D0D4DA">
+
+      <!-- Step 1: elements -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="300"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource Instruction}"
+                     Text="Choose one of the three options below, then tick the categories, families and types to change, and press Next."/>
+          <WrapPanel Grid.Row="1" Grid.ColumnSpan="2" Margin="0,0,0,8">
+            <RadioButton x:Name="ScopeSelection" GroupName="Scope" Margin="0,0,16,0" Checked="OnScope"/>
+            <RadioButton x:Name="ScopeView" GroupName="Scope" Margin="0,0,16,0" Checked="OnScope"/>
+            <RadioButton x:Name="ScopeModel" Content="Whole model" GroupName="Scope" Checked="OnScope"/>
+          </WrapPanel>
+          <DockPanel Grid.Row="2" Grid.Column="0" Margin="0,0,10,0">
+            <TextBlock DockPanel.Dock="Top" Text="Categories" Style="{StaticResource Head}"/>
+            <Grid>
+              <ListBox x:Name="CategoryList" BorderBrush="#D0D4DA">
+                <ListBox.ItemTemplate>
+                  <DataTemplate>
+                    <CheckBox IsChecked="{Binding ticked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              Margin="{Binding indent}" VerticalContentAlignment="Center">
+                      <TextBlock Text="{Binding text}" FontWeight="{Binding weight}"/>
+                    </CheckBox>
+                  </DataTemplate>
+                </ListBox.ItemTemplate>
+              </ListBox>
+              <TextBlock x:Name="EmptyNote" Style="{StaticResource Note}" Margin="12,30,12,0" VerticalAlignment="Top"
+                         Visibility="Collapsed"/>
+            </Grid>
+          </DockPanel>
+          <DockPanel Grid.Row="2" Grid.Column="1">
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+              <TextBlock Text="Families and types in the ticked categories" Style="{StaticResource Head}"
+                         VerticalAlignment="Center"/>
+              <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <Button Content="Tick all" Click="OnTickAllTypes"/>
+                <Button Content="Untick all" Click="OnTickNoTypes" Margin="0"/>
+              </StackPanel>
+            </DockPanel>
+            <DataGrid x:Name="TypeGrid" Style="{StaticResource Grid}" SelectionMode="Single">
+              <DataGrid.Columns>
+                <DataGridTemplateColumn Header="" Width="30">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <CheckBox IsChecked="{Binding ticked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Category" Binding="{Binding category}" IsReadOnly="True" Width="*"/>
+                <DataGridTextColumn Header="Family" Binding="{Binding family}" IsReadOnly="True" Width="2*"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding type_name}" IsReadOnly="True" Width="2*"/>
+                <DataGridTextColumn Header="Elements" Binding="{Binding count}" IsReadOnly="True" Width="70"/>
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+          <WrapPanel Grid.Row="3" Grid.ColumnSpan="2" Margin="0,10,0,0">
+            <CheckBox x:Name="FilterOn" Content="Only elements whose" VerticalAlignment="Center"
+                      Checked="OnFilterChanged" Unchecked="OnFilterChanged"/>
+            <ComboBox x:Name="FilterParam" Width="200" Margin="6,0,6,0" DropDownOpened="OnFilterListOpened"
+                      SelectionChanged="OnFilterChanged"/>
+            <ComboBox x:Name="FilterHow" Width="100" Margin="0,0,6,0" SelectionChanged="OnFilterChanged"/>
+            <TextBox x:Name="FilterText" Width="180" VerticalContentAlignment="Center" TextChanged="OnFilterChanged"/>
+            <CheckBox x:Name="FilterCase" Content="Match capitals" VerticalAlignment="Center" Margin="10,0,0,0"
+                      Checked="OnFilterChanged" Unchecked="OnFilterChanged"/>
+            <TextBlock x:Name="ChosenCount" Style="{StaticResource Label}" FontWeight="SemiBold" Margin="24,0,0,0"/>
+          </WrapPanel>
+        </Grid>
+      </TabItem>
+
+      <!-- Step 2: parameter and change -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="420"/>
+            <ColumnDefinition Width="*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Style="{StaticResource Instruction}"
+                     Text="Choose the parameter to change, then the change, and press Next to check it. Nothing is changed until you press Apply at step 3."/>
+          <DockPanel Grid.Row="1" Grid.Column="0" Margin="0,0,14,0">
+            <TextBlock x:Name="ParamNote" DockPanel.Dock="Top" Style="{StaticResource Note}" Margin="0,0,0,6"/>
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+              <TextBlock Text="Search" VerticalAlignment="Center" Margin="0,0,6,0"/>
+              <TextBox x:Name="ParamSearch" VerticalContentAlignment="Center" TextChanged="OnParamSearch"/>
+            </DockPanel>
+            <DataGrid x:Name="ParamGrid" Style="{StaticResource Grid}" SelectionMode="Single" IsReadOnly="True"
+                      SelectionChanged="OnParamChosen">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Parameter" Binding="{Binding name}" Width="*"/>
+                <DataGridTextColumn Header="Instance or type" Binding="{Binding where}" Width="100"/>
+                <DataGridTextColumn Header="Kind" Binding="{Binding kind}" Width="90"/>
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+          <StackPanel Grid.Row="1" Grid.Column="1">
+            <TextBlock Text="Parameter" Style="{StaticResource Head}"/>
+            <TextBlock x:Name="ChosenParam" Text="(choose one from the list)" Margin="0,0,0,12"/>
+            <TextBlock Text="Change" Style="{StaticResource Head}"/>
+            <ComboBox x:Name="ChangeList" Width="260" HorizontalAlignment="Left" Margin="0,0,0,12"
+                      SelectionChanged="OnChangeChosen"/>
+            <StackPanel x:Name="ValuePanel" Margin="0,0,0,12">
+              <TextBlock x:Name="ValueLabel" Style="{StaticResource Head}"/>
+              <TextBox x:Name="ValueBox" Width="420" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                       TextChanged="OnChangeTyped"/>
+              <TextBlock x:Name="ValueHint" Style="{StaticResource Note}" Margin="0,4,0,0"/>
+            </StackPanel>
+            <StackPanel x:Name="FieldPanel" Margin="0,0,0,12" Visibility="Collapsed">
+              <TextBlock Style="{StaticResource Note}" MaxWidth="560" HorizontalAlignment="Left" Margin="0,0,0,6"
+                         Text="Put each field in { }, for example {Level}-{Room Number}-{Type Mark}. A field is one of the names in the list below or any parameter name of the element. Room Number and Room Name are those of the room each element is in; the rooms are read from the model chosen under Rooms from. An element with no value for a field is left out. To type a { or } itself, type it twice."/>
+              <StackPanel Orientation="Horizontal">
+                <ComboBox x:Name="FieldList" Width="260" Margin="0,0,6,0"/>
+                <Button Content="Insert field" Click="OnInsertField"/>
+              </StackPanel>
+            </StackPanel>
+            <StackPanel x:Name="FindPanel" Margin="0,0,0,12" Visibility="Collapsed">
+              <TextBlock Text="Find" Style="{StaticResource Head}"/>
+              <TextBox x:Name="FindBox" Width="420" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                       TextChanged="OnChangeTyped" Margin="0,0,0,8"/>
+              <TextBlock Text="Replace with" Style="{StaticResource Head}"/>
+              <TextBox x:Name="ReplaceBox" Width="420" HorizontalAlignment="Left" VerticalContentAlignment="Center"
+                       TextChanged="OnChangeTyped" Margin="0,0,0,6"/>
+              <CheckBox x:Name="MatchCase" Content="Match capitals" Checked="OnChangeTyped" Unchecked="OnChangeTyped"/>
+            </StackPanel>
+            <StackPanel x:Name="SourcePanel" Margin="0,0,0,12" Visibility="Collapsed">
+              <TextBlock Text="Copy from" Style="{StaticResource Head}"/>
+              <ComboBox x:Name="SourceList" Width="300" HorizontalAlignment="Left" SelectionChanged="OnChangeTyped"/>
+              <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0"
+                         Text="The value is copied as Revit shows it. An element with no value in the parameter copied from is left out."/>
+            </StackPanel>
+            <StackPanel x:Name="RoomPanel" Margin="0,0,0,12" Visibility="Collapsed">
+              <TextBlock Text="Rooms from" Style="{StaticResource Head}"/>
+              <ComboBox x:Name="RoomList" Width="420" HorizontalAlignment="Left" SelectionChanged="OnRoomChosen"/>
+              <TextBlock x:Name="RoomNote" Style="{StaticResource Note}" Margin="0,4,0,0"/>
+            </StackPanel>
+            <TextBlock x:Name="Example" Style="{StaticResource Note}" MaxWidth="560" HorizontalAlignment="Left"
+                       FontStyle="Italic"/>
+          </StackPanel>
+        </Grid>
+      </TabItem>
+
+      <!-- Step 3: check and apply -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <TextBlock Grid.Row="0" Style="{StaticResource Instruction}"
+                     Text="Check what will change, then press Apply. Elements left out are not changed; the reason is in the Notes column."/>
+          <TextBlock x:Name="CheckSummary" Grid.Row="1" FontWeight="SemiBold" Margin="0,0,0,6" TextWrapping="Wrap"/>
+          <DockPanel Grid.Row="2" Margin="0,0,0,6">
+            <TextBlock Text="Show" VerticalAlignment="Center" Margin="0,0,6,0"/>
+            <ComboBox x:Name="ShowList" Width="140" SelectionChanged="OnShowChosen"/>
+            <TextBlock x:Name="TypeWarning" Foreground="#B00020" FontWeight="SemiBold" TextWrapping="Wrap"
+                       VerticalAlignment="Center" Margin="16,0,0,0" Visibility="Collapsed"/>
+          </DockPanel>
+          <DataGrid x:Name="CheckGrid" Grid.Row="3" Style="{StaticResource Grid}" IsReadOnly="True"
+                    SelectionMode="Extended">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Element" Binding="{Binding element}" Width="90"/>
+              <DataGridTextColumn Header="Category" Binding="{Binding category}" Width="*"/>
+              <DataGridTextColumn Header="Family" Binding="{Binding family}" Width="*"/>
+              <DataGridTextColumn Header="Type" Binding="{Binding type_name}" Width="*"/>
+              <DataGridTextColumn Header="Value now" Binding="{Binding old}" Width="1.3*"/>
+              <DataGridTextColumn Header="New value" Binding="{Binding new}" Width="1.3*"/>
+              <DataGridTextColumn Header="Result" Binding="{Binding state}" Width="80">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{Binding colour}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+              <DataGridTextColumn Header="Notes" Binding="{Binding notes}" Width="3*">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="ToolTip" Value="{Binding notes}"/>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+            </DataGrid.Columns>
+          </DataGrid>
+        </Grid>
+      </TabItem>
+
+      <!-- Results -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <TextBlock x:Name="ResultSummary" Grid.Row="0" Style="{StaticResource Instruction}"/>
+          <DataGrid x:Name="ResultGrid" Grid.Row="1" Style="{StaticResource Grid}" IsReadOnly="True"
+                    SelectionMode="Extended">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Element" Binding="{Binding element}" Width="90"/>
+              <DataGridTextColumn Header="Category" Binding="{Binding category}" Width="*"/>
+              <DataGridTextColumn Header="Family" Binding="{Binding family}" Width="*"/>
+              <DataGridTextColumn Header="Type" Binding="{Binding type_name}" Width="*"/>
+              <DataGridTextColumn Header="Value before" Binding="{Binding old}" Width="1.3*"/>
+              <DataGridTextColumn Header="New value" Binding="{Binding new}" Width="1.3*"/>
+              <DataGridTextColumn Header="Result" Binding="{Binding result}" Width="95">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{Binding result_colour}"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+              <DataGridTextColumn Header="Reason" Binding="{Binding reason}" Width="3*">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="ToolTip" Value="{Binding reason}"/>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+            </DataGrid.Columns>
+          </DataGrid>
+          <StackPanel x:Name="WarningsPanel" Grid.Row="2" Margin="0,8,0,0" Visibility="Collapsed">
+            <TextBlock Text="Warnings from Revit while the values were written, cleared without a dialog" Style="{StaticResource Head}"/>
+            <TextBox x:Name="Warnings" IsReadOnly="True" TextWrapping="Wrap" MaxHeight="90"
+                     VerticalScrollBarVisibility="Auto"/>
+          </StackPanel>
+          <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+            <Button Content="Select changed elements and close" Click="OnSelectChanged" Style="{StaticResource Primary}"/>
+            <Button Content="Select elements not changed and close" Click="OnSelectNotChanged"/>
+          </StackPanel>
+        </Grid>
+      </TabItem>
+    </TabControl>
+
+    <!-- Status and the buttons that move between the steps -->
+    <Grid Grid.Row="2" Margin="0,8,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock x:Name="Status" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0"/>
+      <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <Button x:Name="BackButton" Content="&#x2039; Back" Click="OnBack"/>
+        <Button x:Name="NextButton" Content="Next &#x203A;" Style="{StaticResource Primary}" Click="OnNext"/>
+        <Button x:Name="ApplyButton" Content="Apply" Style="{StaticResource Primary}" Click="OnApply"
+                Visibility="Collapsed"/>
+        <Button Content="Close" Click="OnClose" Margin="0"/>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>
