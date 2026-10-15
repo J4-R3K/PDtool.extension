@@ -102,11 +102,11 @@ def renamed_summary(rows):
             return (u"{0} is open in another program, so the new file is saved as {1}, which does not follow the "
                     u"naming rule. Close {0} and export again to replace it.").format(r["renamed_from"], r["file"])
         return (u"{0} could not be replaced, so the new file is saved as {1}, which does not follow the naming rule. "
-                u"The Result column gives the reason.").format(r["renamed_from"], r["file"])
+                u"The Result column provides the reason.").format(r["renamed_from"], r["file"])
     if in_use:
         return (u"{} files are open in another program, so the new files are saved with (1) or a higher number added "
                 u"to the name, which does not follow the naming rule. Close those files and export again to replace "
                 u"them.").format(len(renamed))
     return (u"{} files could not be replaced, so the new files are saved with (1) or a higher number added to the "
-            u"name, which does not follow the naming rule. The Result column gives the reason for each.").format(
-        len(renamed))
+            u"name, which does not follow the naming rule. The Result column provides the reason for each "
+            u"file.").format(len(renamed))

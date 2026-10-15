@@ -1089,7 +1089,8 @@ class SheetsWindow(forms.WPFWindow):
             problem = (u"The output folder {} is on another computer on the network. Press Use this folder to export "
                        u"there, or Browse to choose another folder.").format(path)
         elif not problem and not os.path.isdir(path):
-            problem = u"The folder {} is not on this PC. Choose another folder, or create it first.".format(path)
+            problem = (u"The folder {} cannot be found. Create it and choose it with Browse, or choose another "
+                       u"folder.").format(path)
         self.UseFolderButton.Visibility = Visibility.Visible if ask else Visibility.Collapsed
         self.folder_path = None if problem else path
         self.folder_problem = problem
@@ -1114,7 +1115,7 @@ class SheetsWindow(forms.WPFWindow):
         return BrushConverter().ConvertFromString(colour)
 
     def OnBrowse(self, sender, args):
-        chosen = forms.pick_folder(title=u"Choose the output folder")
+        chosen = forms.pick_folder(title=u"Choose an output folder")
         if not chosen:
             return
         stored = folders.to_stored(chosen, self.mounts, self.home)
@@ -1232,9 +1233,10 @@ class SheetsWindow(forms.WPFWindow):
                 note = u"No {} in the set {} match the search \"{}\". Clear the search box or choose (all).".format(
                     what, chosen_set, typed)
             elif text:
-                note = u"No {} match the search \"{}\". Clear the search box to see them all.".format(what, typed)
+                note = u"No {} match the search \"{}\". Clear the search box to see the whole list.".format(
+                    what, typed)
             else:
-                note = u"The set {} has no {}. Choose (all) to see them all.".format(chosen_set, what)
+                note = u"The set {} has no {}. Choose (all) to see the whole list.".format(chosen_set, what)
             self.EmptyNote.Text = note
             self.EmptyNote.Visibility = Visibility.Visible
         self._count()
@@ -1855,7 +1857,7 @@ class SheetsWindow(forms.WPFWindow):
                 f.write(u"test")
             os.remove(test)
         except Exception as ex:
-            forms.alert(u"PD Sheets cannot write to the folder {}. Choose another folder.".format(folder),
+            forms.alert(u"Files cannot be written to the folder {}. Choose another folder.".format(folder),
                         sub_msg=u"{}".format(ex))
             return
         ticked = self._ticked()
@@ -1959,7 +1961,7 @@ class SheetsWindow(forms.WPFWindow):
         if renamed:
             text += u" " + renamed
         if failed:
-            text += u" The Result column gives the reason for each failure."
+            text += u" The Result column provides the reason for each file that failed."
         noted = len([r for r in rows if r.get("note")])
         if noted:
             text += u" The Note column says what Revit did during the export of {}.".format(
