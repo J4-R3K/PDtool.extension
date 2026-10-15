@@ -15,11 +15,38 @@ C:\\Users\\<name>\\. PD Sheets stores a folder in one of three forms:
         anything else, as typed.
 
 A personal OneDrive is treated as part of the user's own folders, not as a library: its address names the user.
+
+A profile comes from the shared folder or from a ProSheets import, so what it stores is checked before it is used
+(security review of commit 352edb9, 15/10/2026): "below" and "home" must stay inside the library or the user's folder
+(_stays_inside), and a "path" on another computer (is_network) is not looked at until the user confirms it in the
+window, because Windows contacts that computer as soon as the folder is looked at. None of PD's profiles stored a
+network folder on 15/10/2026 (the 2 PD Sheets profiles and the 11 ProSheets profiles all name folders under
+C:\\Users).
 """
 import os
 
 PD_TEMPLATES_LIBRARY = u"https://projectdesignio.sharepoint.com/sites/PD/00_Templates"
 PROFILES_BELOW = u"AppSettings\\PD Sheets"
+
+
+def is_network(path):
+    """True when the path starts with two backslashes (or slashes): a folder on another computer, \\\\host\\share, and
+    the \\\\?\\ and \\\\.\\ forms, which can name one too."""
+    return (path or u"").replace(u"/", u"\\").startswith(u"\\\\")
+
+
+def _stays_inside(below):
+    """True when below, joined to a folder, names that folder or one inside it: no drive, no starting slash, and no
+    part made only of dots and spaces. ".." is the folder above; other runs such as ".. " are refused as well, because
+    Windows removes the dots and spaces at the end of a path ("File path formats on Windows systems", Microsoft
+    Learn), and PD's folders never have such a name."""
+    try:
+        text = (below or u"").replace(u"/", u"\\")
+    except AttributeError:  # not text: a damaged or hand-edited profile
+        return False
+    if u":" in text or text.startswith(u"\\"):
+        return False
+    return not any(part and not part.strip(u". ") for part in text.split(u"\\"))
 
 
 def _norm(path):
@@ -96,13 +123,20 @@ def to_local(stored, mounts, home):
         return None, u"No output folder is set. Choose one."
     if "library" in stored:
         want = stored["library"].rstrip(u"/").lower()
+        name = stored["library"].rstrip(u"/").split(u"/")[-1]
+        below = stored.get("below") or u""
+        if not _stays_inside(below):
+            return None, (u"The output folder in the profile, {}, is outside the SharePoint library {}, so PD Sheets "
+                          u"does not use it. Choose another folder.").format(below, name)
         for mount, url in mounts:
             if url.rstrip(u"/").lower() == want:
-                return os.path.join(mount, stored.get("below") or u""), None
-        name = stored["library"].rstrip(u"/").split(u"/")[-1]
+                return os.path.join(mount, below), None
         return None, (u"The SharePoint library {} is not synced on this PC. Sync it from SharePoint, or choose "
                       u"another folder.").format(name)
     if "home" in stored:
+        if not _stays_inside(stored["home"]):
+            return None, (u"The output folder in the profile, {}, is outside your own user folder, so PD Sheets does not "
+                          u"use it. Choose another folder.").format(stored["home"])
         return os.path.join(home, stored["home"]), None
     if "path" in stored:
         return stored["path"], None

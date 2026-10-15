@@ -13,6 +13,8 @@ The model is never changed and nothing is left borrowed on a workshared model (c
   export when the user had borrowed nothing before the export started; otherwise the row says so.
 Revit shows a message box while it exports a shaded view to DWF ("Revit will use raster printing because this view
 uses shading ..."), which stops the export until someone closes it. Run closes that message and the row records it.
+Revit prints what the user has selected in its selection colours, so Run clears the selection for the export and puts
+it back afterwards (_clear_selection).
 Needs Revit.
 """
 import os
@@ -279,14 +281,44 @@ def borrowed(doc):
     return n
 
 
+def _clear_selection(uiapp, doc):
+    """Clear the user's selection in doc and return (UIDocument, the ids selected), or None when nothing was selected
+    or the selection could not be read. Revit prints a selected element in its selection colours: on one sheet a
+    selected viewport came out with its edge and title line in magenta and its title in blue (Jarek, 15/10/2026). The
+    tool's own PDF of that sheet gave the same with the viewport selected, and none of it with the selection cleared."""
+    try:
+        uidoc = uiapp.ActiveUIDocument
+        if uidoc is None or not uidoc.Document.Equals(doc):
+            return None
+        ids = uidoc.Selection.GetElementIds()
+        if not ids.Count:
+            return None
+        uidoc.Selection.SetElementIds(List[ElementId]())
+        return uidoc, ids
+    except Exception:
+        return None
+
+
+def _put_back_selection(cleared):
+    """Select again what _clear_selection cleared."""
+    if cleared is None:
+        return
+    uidoc, ids = cleared
+    try:
+        uidoc.Selection.SetElementIds(ids)
+    except Exception:
+        pass  # the files are written; only the selection is lost
+
+
 class Run(object):
     """One export run. Used as "with Run(doc, uiapp) as run:" around the exports, so the message box handler is
-    always removed afterwards.
+    always removed and the user's selection is always put back afterwards.
 
-    It closes the message boxes in ANSWERS while Revit exports, and lists every message box Revit showed so each
-    row can say what happened. On a workshared model it counts what the user had borrowed before the export, so it
-    can give back what an export borrowed (only when that was nothing, so it never gives back the user's own
-    borrowing)."""
+    It clears the user's selection for the export, so nothing is printed in Revit's selection colours
+    (_clear_selection). It closes the message boxes in ANSWERS while Revit exports, and lists every message box Revit
+    showed so each row can say what happened. On a workshared model it counts what the user had borrowed before the
+    export, so it can give back what an export borrowed (only when that was nothing, so it never gives back the user's
+    own borrowing)."""
 
     def __init__(self, doc, uiapp=None):
         self.doc = doc
@@ -302,10 +334,12 @@ class Run(object):
         # Linked CAD files in the model (model.linked_cad), read once in a run when a DGN needs them.
         self.cad = None
         self._handler = self._on_dialog  # one object, so the same handler is added and removed
+        self._cleared = None  # the user's selection while it is cleared for the export
 
     def __enter__(self):
         if self.uiapp is not None:
             self.uiapp.DialogBoxShowing += self._handler
+            self._cleared = _clear_selection(self.uiapp, self.doc)
         return self
 
     def __exit__(self, *exc):
@@ -314,6 +348,8 @@ class Run(object):
                 self.uiapp.DialogBoxShowing -= self._handler
             except Exception:
                 pass
+            _put_back_selection(self._cleared)
+            self._cleared = None
         return False
 
     def _on_dialog(self, sender, args):

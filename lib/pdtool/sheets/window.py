@@ -740,7 +740,9 @@ class SheetsWindow(forms.WPFWindow):
         self._controls_to_profile()
         self.saved_text = self._snapshot()
         remembered = (self.last.get(self.model_key) or {}).get("folder")
-        self._set_folder(remembered if remembered else self.profile.get("folder") or {})
+        # A remembered folder was chosen by this user on this PC (Browse, Use this folder or an export), so a folder
+        # on another computer in it is not asked about again; one from the profile is (_set_folder).
+        self._set_folder(remembered if remembered else self.profile.get("folder") or {}, confirmed=bool(remembered))
         self._rebuild_names()
         for r in self._rows():
             r.refresh_settings()
@@ -1072,14 +1074,23 @@ class SheetsWindow(forms.WPFWindow):
 
     # ---- output folder and formats --------------------------------------------------------------------------------
 
-    def _set_folder(self, stored):
+    def _set_folder(self, stored, confirmed=False):
+        """Show the output folder. A folder on another computer (folders.is_network) is not looked at until the user
+        has chosen it or pressed Use this folder: Windows contacts that computer as soon as the folder is looked at,
+        and a profile may come from the shared folder or a ProSheets import (security review of commit 352edb9,
+        15/10/2026)."""
         self.folder_stored = stored or {}
         if not self.folder_stored:
             path, problem = None, u"Choose an output folder."
         else:
             path, problem = folders.to_local(self.folder_stored, self.mounts, self.home)
-        if not problem and not os.path.isdir(path):
+        ask = not problem and not confirmed and folders.is_network(path)
+        if ask:
+            problem = (u"The output folder {} is on another computer on the network. Press Use this folder to export "
+                       u"there, or Browse to choose another folder.").format(path)
+        elif not problem and not os.path.isdir(path):
             problem = u"The folder {} is not on this PC. Choose another folder, or create it first.".format(path)
+        self.UseFolderButton.Visibility = Visibility.Visible if ask else Visibility.Collapsed
         self.folder_path = None if problem else path
         self.folder_problem = problem
         self.FolderBox.Text = path or u""
@@ -1109,7 +1120,13 @@ class SheetsWindow(forms.WPFWindow):
         stored = folders.to_stored(chosen, self.mounts, self.home)
         self.profile["folder"] = stored
         self._remember(folder=stored)
-        self._set_folder(stored)
+        self._set_folder(stored, confirmed=True)
+
+    def OnUseFolder(self, sender, args):
+        """The user confirms the profile's folder on another computer (_set_folder), which is then remembered as a
+        folder chosen with Browse is."""
+        self._remember(folder=self.folder_stored)
+        self._set_folder(self.folder_stored, confirmed=True)
 
     def _formats(self):
         """The labels of the formats ticked, in the order of the panels. A format this Revit cannot make is never
@@ -1863,8 +1880,9 @@ class SheetsWindow(forms.WPFWindow):
         rows = []
         total = len(todo)
         stopped = False
-        # Run answers the message box Revit shows while it exports a shaded view to DWF, and gives back what Revit
-        # borrows on a workshared model for an NWC (exporter.Run).
+        # Run clears the selection for the export so nothing prints in Revit's selection colours, answers the message
+        # box Revit shows while it exports a shaded view to DWF, and gives back what Revit borrows on a workshared
+        # model for an NWC (exporter.Run).
         with exporter.Run(self.doc, _uiapp()) as run:
             run.names = names_by_key
             with forms.ProgressBar(title=u"Exporting: {value} of {max_value}", cancellable=True) as pb:

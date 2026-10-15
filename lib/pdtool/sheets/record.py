@@ -3,9 +3,17 @@
 
 UTF-8 with a byte order mark so Excel opens it with the right characters; Windows line endings; every field quoted.
 Written by hand rather than with the csv module, whose text handling differs between IronPython 2.7 and CPython 3.
+
+Text that Excel would read as a formula gets a single quote in front, so the record never runs one (security review
+of commit 352edb9, 15/10/2026): text that starts with =, +, @, a tab or a carriage return, and text that starts with
+- unless it is a lone - (the revision of a drawing not yet revised) or a number.
 """
 import io
 import os
+import re
+
+_FORMULA_START = (u"=", u"+", u"@", u"\t", u"\r")
+_NUMBER = re.compile(u"-(?:[0-9]+(?:\\.[0-9]*)?|\\.[0-9]+)(?:[eE][+-]?[0-9]+)?\\Z")
 
 COLUMNS = (
     (u"file", u"File"),
@@ -46,7 +54,16 @@ def _field(value):
         text = u"; ".join(u"{}".format(v) for v in value)
     else:
         text = u"{}".format(value)
+    if _formula(text):
+        text = u"'" + text
     return u'"{}"'.format(text.replace(u'"', u'""'))
+
+
+def _formula(text):
+    """True when Excel would read the text as a formula (see the module notes)."""
+    if text.startswith(_FORMULA_START):
+        return True
+    return text.startswith(u"-") and text != u"-" and not _NUMBER.match(text)
 
 
 def lines(rows):

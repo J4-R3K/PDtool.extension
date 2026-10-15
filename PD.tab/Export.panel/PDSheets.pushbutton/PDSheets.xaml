@@ -289,14 +289,17 @@
                 <Grid.ColumnDefinitions>
                   <ColumnDefinition Width="*"/>
                   <ColumnDefinition Width="Auto"/>
+                  <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                   <RowDefinition Height="Auto"/>
                   <RowDefinition Height="Auto"/>
                 </Grid.RowDefinitions>
                 <TextBox x:Name="FolderBox" IsReadOnly="True" VerticalContentAlignment="Center"/>
-                <Button Grid.Column="1" Content="Browse" Click="OnBrowse" Margin="6,0,0,0"/>
-                <TextBlock x:Name="FolderNote" Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource Note}" Margin="0,4,0,0"/>
+                <Button x:Name="UseFolderButton" Grid.Column="1" Content="Use this folder" Click="OnUseFolder"
+                        Margin="6,0,0,0" Visibility="Collapsed"/>
+                <Button Grid.Column="2" Content="Browse" Click="OnBrowse" Margin="6,0,0,0"/>
+                <TextBlock x:Name="FolderNote" Grid.Row="1" Grid.ColumnSpan="3" Style="{StaticResource Note}" Margin="0,4,0,0"/>
               </Grid>
             </GroupBox>
 
