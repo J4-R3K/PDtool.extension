@@ -1,0 +1,193 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PD Schedules" Width="1120" Height="740" MinWidth="900" MinHeight="560"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
+        FontFamily="Segoe UI" FontSize="12" Background="#F3F4F6" Closing="OnClosing">
+  <Window.Resources>
+    <Style TargetType="Button">
+      <Setter Property="Padding" Value="10,3"/>
+      <Setter Property="Margin" Value="0,0,6,0"/>
+      <Setter Property="MinWidth" Value="60"/>
+    </Style>
+    <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="#1F4E79"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="MinWidth" Value="110"/>
+    </Style>
+    <Style x:Key="Instruction" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="#1F4E79"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+    <Style x:Key="Note" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#4A5260"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style x:Key="Label" TargetType="TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Margin" Value="12,0,6,0"/>
+    </Style>
+    <Style TargetType="GroupBox">
+      <Setter Property="Margin" Value="0,0,0,10"/>
+      <Setter Property="Padding" Value="8,6"/>
+      <Setter Property="Background" Value="White"/>
+    </Style>
+  </Window.Resources>
+
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <TabControl x:Name="Tabs" Grid.Row="0" Padding="10" Background="White" BorderBrush="#D0D4DA">
+
+      <!-- The list and the choices -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="12"/>
+            <ColumnDefinition Width="350"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Style="{StaticResource Instruction}"
+                     Text="Tick the schedules and panel schedules to export, choose the folder, then press Export. The model is only read; nothing in it is changed."/>
+
+          <Grid Grid.Row="1" Grid.Column="0">
+            <Grid.RowDefinitions>
+              <RowDefinition Height="Auto"/>
+              <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <WrapPanel Grid.Row="0" Margin="0,0,0,6">
+              <TextBlock Text="Search" Style="{StaticResource Label}" Margin="0,0,6,0"/>
+              <TextBox x:Name="SearchBox" Width="220" VerticalContentAlignment="Center" TextChanged="OnSearch"/>
+              <Button Content="Tick all shown" Click="OnTickAll" Margin="12,0,6,0"/>
+              <Button Content="Untick all" Click="OnTickNone"/>
+              <TextBlock x:Name="TickedCount" Style="{StaticResource Label}" FontWeight="SemiBold"/>
+            </WrapPanel>
+            <DataGrid x:Name="ItemGrid" Grid.Row="1" AutoGenerateColumns="False" CanUserAddRows="False"
+                      CanUserDeleteRows="False" CanUserSortColumns="False" CanUserReorderColumns="False"
+                      SelectionMode="Single" SelectionUnit="FullRow" HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E3E6EA" RowHeight="24"
+                      Background="White">
+              <DataGrid.Columns>
+                <DataGridTemplateColumn Header="" Width="30">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <CheckBox IsChecked="{Binding ticked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                                HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Name" Binding="{Binding name}" IsReadOnly="True" Width="3*"/>
+                <DataGridTextColumn Header="Kind" Binding="{Binding kind}" IsReadOnly="True" Width="130"/>
+              </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock x:Name="EmptyNote" Grid.Row="1" Style="{StaticResource Note}" Margin="12,40,12,0"
+                       HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="13" Visibility="Collapsed"/>
+          </Grid>
+
+          <ScrollViewer Grid.Row="1" Grid.Column="2" VerticalScrollBarVisibility="Auto">
+            <StackPanel>
+              <GroupBox Header="Panel schedules">
+                <StackPanel>
+                  <CheckBox x:Name="PanelRevit" Content="As in Revit" FontWeight="SemiBold"/>
+                  <TextBlock Style="{StaticResource Note}" Margin="20,2,0,8"
+                             Text="The sheet is laid out as Revit shows the panel schedule, cell by cell."/>
+                  <CheckBox x:Name="PanelChart" Content="Distribution board (DB) chart" FontWeight="SemiBold"/>
+                  <TextBlock Style="{StaticResource Note}" Margin="20,2,0,0"
+                             Text="The sheet is in the layout of PD's DB charts: one row for each way and phase, filled from the circuits in the model. A value the model does not hold is written as &quot;-&quot;, except in the No of Points column, which reads &quot;TBC&quot; (to be confirmed) where a circuit has no points; the board's Status and Date cells are left blank. The DB chart is made only for a panel schedule set out with one column of circuits."/>
+                </StackPanel>
+              </GroupBox>
+
+              <GroupBox Header="Workbooks">
+                <StackPanel>
+                  <RadioButton x:Name="OneBook" GroupName="Book" Content="One workbook for all the ticked schedules"
+                               Checked="OnBookChoice"/>
+                  <RadioButton x:Name="BookEach" GroupName="Book" Content="A workbook for each schedule"
+                               Checked="OnBookChoice" Margin="0,4,0,8"/>
+                  <Grid x:Name="FileNameRow" Margin="0,0,0,4">
+                    <Grid.ColumnDefinitions>
+                      <ColumnDefinition Width="Auto"/>
+                      <ColumnDefinition Width="*"/>
+                      <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBlock Text="File name" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                    <TextBox x:Name="FileNameBox" Grid.Column="1" VerticalContentAlignment="Center"/>
+                    <TextBlock Grid.Column="2" Text=".xlsx" VerticalAlignment="Center" Margin="4,0,0,0"/>
+                  </Grid>
+                  <TextBlock x:Name="FileNote" Style="{StaticResource Note}"/>
+                </StackPanel>
+              </GroupBox>
+
+              <GroupBox Header="Output folder">
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto"/>
+                    <RowDefinition Height="Auto"/>
+                  </Grid.RowDefinitions>
+                  <TextBox x:Name="FolderBox" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                  <Button Grid.Column="1" Content="Browse" Click="OnBrowse" Margin="6,0,0,0"/>
+                  <TextBlock x:Name="FolderNote" Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource Note}"
+                             Margin="0,4,0,0"/>
+                </Grid>
+              </GroupBox>
+            </StackPanel>
+          </ScrollViewer>
+        </Grid>
+      </TabItem>
+
+      <!-- Results -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <TextBlock x:Name="ResultSummary" Grid.Row="0" Style="{StaticResource Instruction}"
+                     Text="Nothing has been exported yet."/>
+          <TextBlock Grid.Row="1" Style="{StaticResource Note}" Margin="0,0,0,6"
+                     Text="Double-click a row to open its folder with the workbook selected."/>
+          <DataGrid x:Name="ResultGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True"
+                    CanUserSortColumns="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                    HorizontalGridLinesBrush="#E3E6EA" RowHeight="22" Background="White" SelectionMode="Single"
+                    MouseDoubleClick="OnOpenLocation">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Name in Revit" Binding="{Binding name}" Width="2*"/>
+              <DataGridTextColumn Header="Sheet" Binding="{Binding sheet}" Width="2*"/>
+              <DataGridTextColumn Header="Layout" Binding="{Binding layout}" Width="90"/>
+              <DataGridTextColumn Header="Rows" Binding="{Binding rows}" Width="50"/>
+              <DataGridTextColumn Header="Columns" Binding="{Binding cols}" Width="60"/>
+              <DataGridTextColumn Header="Workbook" Binding="{Binding file}" Width="2*"/>
+              <DataGridTextColumn Header="Result" Binding="{Binding result}" Width="2*"/>
+              <DataGridTextColumn Header="Notes" Binding="{Binding notes}" Width="3*"/>
+            </DataGrid.Columns>
+          </DataGrid>
+          <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+            <Button Content="Open file location" Click="OnOpenLocation" Style="{StaticResource Primary}"/>
+            <Button Content="Open the workbook" Click="OnOpenFile"/>
+          </StackPanel>
+        </Grid>
+      </TabItem>
+    </TabControl>
+
+    <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,8,0,0">
+      <Button x:Name="BackButton" Content="&#x2039; Back to the list" Click="OnBack" Visibility="Collapsed"/>
+      <Button x:Name="ExportButton" Content="Export" Style="{StaticResource Primary}" Click="OnExport"/>
+      <Button Content="Close" Click="OnClose" Margin="0"/>
+    </StackPanel>
+  </Grid>
+</Window>

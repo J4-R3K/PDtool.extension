@@ -1,0 +1,6 @@
+title: PD Schedules
+tooltip: Export schedules and panel schedules to Excel workbooks. A schedule is laid out as Revit shows it. A panel schedule can be laid out as Revit shows it, as in PD's distribution board (DB) charts, or both. The model is only read; nothing in it is changed. Excel does not need to be installed to make the workbooks.
+author: Jarek Wityk
+contexts:
+  - project
+script: script.py
