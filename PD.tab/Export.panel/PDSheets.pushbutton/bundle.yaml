@@ -1,0 +1,6 @@
+title: PD Sheets
+tooltip: Export sheets and views with Revit's own export to PDF, DWG, DGN, DWF or DWFx, IFC, NWC, images and XML, named by the PD naming rule. Lists the views Revit will rasterise in a PDF before you export, and gives the size of each file afterwards.
+author: Jarek Wityk
+contexts:
+  - project
+script: script.py

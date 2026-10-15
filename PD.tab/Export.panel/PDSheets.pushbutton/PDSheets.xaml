@@ -1,0 +1,858 @@
+<Window xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="PD Sheets" Width="1260" Height="820" MinWidth="1000" MinHeight="640"
+        WindowStartupLocation="CenterOwner" ResizeMode="CanResizeWithGrip" ShowInTaskbar="False"
+        FontFamily="Segoe UI" FontSize="12" Background="#F3F4F6" Closing="OnClosing">
+  <Window.Resources>
+    <Style TargetType="Button">
+      <Setter Property="Padding" Value="10,3"/>
+      <Setter Property="Margin" Value="0,0,6,0"/>
+      <Setter Property="MinWidth" Value="60"/>
+    </Style>
+    <Style x:Key="Primary" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="#1F4E79"/>
+      <Setter Property="Foreground" Value="White"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="MinWidth" Value="110"/>
+    </Style>
+    <Style x:Key="StepButton" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="Foreground" Value="#1F4E79"/>
+      <Setter Property="BorderBrush" Value="#B8C2CE"/>
+      <Setter Property="Padding" Value="14,5"/>
+      <Setter Property="Margin" Value="0"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+    <Style x:Key="StepArrow" TargetType="TextBlock">
+      <Setter Property="Text" Value="&#x203A;"/>
+      <Setter Property="FontSize" Value="18"/>
+      <Setter Property="Foreground" Value="#8A94A3"/>
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Margin" Value="8,0"/>
+    </Style>
+    <Style x:Key="Instruction" TargetType="TextBlock">
+      <Setter Property="FontSize" Value="13"/>
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Foreground" Value="#1F4E79"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+    <Style x:Key="Head" TargetType="TextBlock">
+      <Setter Property="FontWeight" Value="SemiBold"/>
+      <Setter Property="Margin" Value="0,0,0,4"/>
+    </Style>
+    <Style x:Key="Note" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#4A5260"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style x:Key="Label" TargetType="TextBlock">
+      <Setter Property="VerticalAlignment" Value="Center"/>
+      <Setter Property="Margin" Value="12,0,6,0"/>
+    </Style>
+    <Style TargetType="GroupBox">
+      <Setter Property="Margin" Value="0,0,0,10"/>
+      <Setter Property="Padding" Value="8,6"/>
+      <Setter Property="Background" Value="White"/>
+    </Style>
+    <Style TargetType="Expander">
+      <Setter Property="Margin" Value="0,0,0,10"/>
+      <Setter Property="Padding" Value="10,6,10,8"/>
+      <Setter Property="Background" Value="White"/>
+      <Setter Property="BorderBrush" Value="#D0D4DA"/>
+      <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style x:Key="FileName" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="{Binding name_colour}"/>
+    </Style>
+    <Style x:Key="Missing" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#B00020"/>
+      <Setter Property="TextWrapping" Value="Wrap"/>
+      <Setter Property="MaxWidth" Value="840"/>
+      <Setter Property="HorizontalAlignment" Value="Left"/>
+      <Setter Property="Margin" Value="0,4,0,4"/>
+      <Setter Property="Visibility" Value="Collapsed"/>
+    </Style>
+    <Style x:Key="Problems" TargetType="TextBlock">
+      <Setter Property="Foreground" Value="#B00020"/>
+      <Setter Property="TextWrapping" Value="NoWrap"/>
+      <Setter Property="ToolTip" Value="{Binding check}"/>
+    </Style>
+  </Window.Resources>
+
+  <Grid Margin="12">
+    <Grid.RowDefinitions>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="Auto"/>
+      <RowDefinition Height="*"/>
+      <RowDefinition Height="Auto"/>
+    </Grid.RowDefinitions>
+
+    <!-- Profile bar -->
+    <Border Grid.Row="0" Background="White" BorderBrush="#D0D4DA" BorderThickness="1" Padding="8" Margin="0,0,0,8">
+      <DockPanel>
+        <StackPanel Orientation="Horizontal" DockPanel.Dock="Left" VerticalAlignment="Center">
+          <TextBlock Text="Profile" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+          <ComboBox x:Name="ProfileList" Width="280" SelectionChanged="OnProfileChosen"/>
+          <Button Content="New" Click="OnNew" Margin="8,0,6,0"/>
+          <Button Content="Save" Click="OnSave"/>
+          <Button Content="Save as" Click="OnSaveAs"/>
+          <Button Content="Rename" Click="OnRename"/>
+          <Button Content="Delete" Click="OnDelete"/>
+          <Button x:Name="ImportButton" Content="Import ProSheets profiles" Click="OnImport"
+                  ToolTip="Makes a PD Sheets profile from each ProSheets profile file (.xml) you choose, with its file names, output folder and PDF settings. The ProSheets files are only read, never changed."/>
+        </StackPanel>
+        <TextBlock x:Name="ProfileWhere" Style="{StaticResource Note}" VerticalAlignment="Center" Margin="12,0,0,0"/>
+      </DockPanel>
+    </Border>
+
+    <!-- Steps -->
+    <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,0,0,8">
+      <Button x:Name="Step1" Content="1  Sheets and views" Tag="0" Click="OnStep" Style="{StaticResource StepButton}"/>
+      <TextBlock Style="{StaticResource StepArrow}"/>
+      <Button x:Name="Step2" Content="2  File names" Tag="1" Click="OnStep" Style="{StaticResource StepButton}"/>
+      <TextBlock Style="{StaticResource StepArrow}"/>
+      <Button x:Name="Step3" Content="3  Formats and folder" Tag="2" Click="OnStep" Style="{StaticResource StepButton}"/>
+      <TextBlock Style="{StaticResource StepArrow}"/>
+      <Button x:Name="Step4" Content="4  Check and export" Tag="3" Click="OnStep" Style="{StaticResource StepButton}"/>
+      <TextBlock Style="{StaticResource StepArrow}"/>
+      <Button x:Name="Step5" Content="Results" Tag="4" Click="OnStep" Style="{StaticResource StepButton}" IsEnabled="False"/>
+    </StackPanel>
+
+    <TabControl x:Name="Tabs" Grid.Row="2" Padding="10" Background="White" BorderBrush="#D0D4DA">
+
+      <!-- Step 1: sheets and views -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+          </Grid.RowDefinitions>
+          <TextBlock Grid.Row="0" Style="{StaticResource Instruction}"
+                     Text="Tick the sheets or views to export, then press Next. To give one a different file name, type over it in the file name column."/>
+          <WrapPanel Grid.Row="1" Margin="0,0,0,6">
+            <RadioButton x:Name="ShowSheets" Content="Sheets" GroupName="Kind" VerticalAlignment="Center" Margin="0,0,10,0" Checked="OnListKind"/>
+            <RadioButton x:Name="ShowViews" Content="Views" GroupName="Kind" VerticalAlignment="Center" Checked="OnListKind"/>
+            <TextBlock Text="Search" Style="{StaticResource Label}" Margin="20,0,6,0"/>
+            <TextBox x:Name="SearchBox" Width="200" VerticalContentAlignment="Center" TextChanged="OnSearch"/>
+            <TextBlock Text="View/Sheet Set" Style="{StaticResource Label}"/>
+            <ComboBox x:Name="SetFilter" Width="220" SelectionChanged="OnSetFilter"/>
+            <Button Content="Tick all shown" Click="OnTickAll" Margin="12,0,6,0"/>
+            <Button Content="Untick all" Click="OnTickNone"/>
+            <TextBlock x:Name="TickedCount" Style="{StaticResource Label}" FontWeight="SemiBold"/>
+          </WrapPanel>
+          <DataGrid x:Name="ItemGrid" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False"
+                    CanUserDeleteRows="False" CanUserSortColumns="False" CanUserReorderColumns="False"
+                    SelectionMode="Single" SelectionUnit="FullRow" HeadersVisibility="Column"
+                    GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E3E6EA" RowHeight="24"
+                    Background="White" SelectionChanged="OnItemSelected">
+            <DataGrid.Columns>
+              <DataGridTemplateColumn Header="" Width="30">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <CheckBox IsChecked="{Binding ticked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                              HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTextColumn Header="Number" Binding="{Binding number}" IsReadOnly="True" Width="100"/>
+              <DataGridTextColumn Header="Name" Binding="{Binding name}" IsReadOnly="True" Width="2*"/>
+              <DataGridTextColumn Header="Revision" Binding="{Binding revision}" IsReadOnly="True" Width="62"/>
+              <DataGridTextColumn Header="Sheet size" Binding="{Binding size_text}" IsReadOnly="True" Width="120"/>
+              <DataGridTextColumn Header="PDF file name" Binding="{Binding pdf_name, Mode=TwoWay}" Width="3*">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{Binding name_colour}"/>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+              <DataGridTextColumn Header="DWG file name" Binding="{Binding dwg_name, Mode=TwoWay}" Width="3*">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{Binding name_colour}"/>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+              <DataGridTextColumn Header="DGN file name" Binding="{Binding dgn_name, Mode=TwoWay}" Width="3*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="DWF file name" Binding="{Binding dwf_name, Mode=TwoWay}" Width="3*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="IFC file name" Binding="{Binding ifc_name, Mode=TwoWay}" Width="3*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="NWC file name" Binding="{Binding nwc_name, Mode=TwoWay}" Width="3*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="Image file name" Binding="{Binding img_name, Mode=TwoWay}" Width="3*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="XML file name" Binding="{Binding xml_name, Mode=TwoWay}" Width="3*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="Problems" Binding="{Binding check}" IsReadOnly="True" Width="2*"
+                                  ElementStyle="{StaticResource Problems}"/>
+            </DataGrid.Columns>
+          </DataGrid>
+          <TextBlock x:Name="EmptyNote" Grid.Row="2" Style="{StaticResource Note}" Margin="12,40,12,0"
+                     HorizontalAlignment="Center" VerticalAlignment="Top" FontSize="13" Visibility="Collapsed"/>
+        </Grid>
+      </TabItem>
+
+      <!-- Step 2: file names -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="2*"/>
+            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="3*"/>
+          </Grid.ColumnDefinitions>
+          <TextBlock Grid.Row="0" Grid.ColumnSpan="3" Style="{StaticResource Instruction}"
+                     Text="Build the file name from parameters: select a parameter on the left and press Add. Put the parts in order with Move up and Move down."/>
+          <WrapPanel Grid.Row="1" Grid.ColumnSpan="3" Margin="0,0,0,8">
+            <TextBlock Text="Rule" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,0,8,0"/>
+            <ComboBox x:Name="RuleList" Width="240" SelectionChanged="OnRuleChosen"/>
+            <Button Content="New rule" Click="OnRuleNew" Margin="8,0,6,0"/>
+            <Button Content="Copy" Click="OnRuleCopy"/>
+            <Button Content="Rename" Click="OnRuleRename"/>
+            <Button Content="Delete" Click="OnRuleDelete"/>
+            <TextBlock x:Name="RuleUse" Style="{StaticResource Note}" VerticalAlignment="Center" Margin="8,0,0,0"/>
+          </WrapPanel>
+          <DockPanel Grid.Row="2" Grid.Column="0">
+            <TextBlock DockPanel.Dock="Top" Text="Parameters in this model" Style="{StaticResource Head}"/>
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,4">
+              <TextBlock Text="Search" VerticalAlignment="Center" Margin="0,0,6,0"/>
+              <TextBox x:Name="ParamSearch" VerticalContentAlignment="Center" TextChanged="OnParamSearch"/>
+            </DockPanel>
+            <DataGrid x:Name="ParamGrid" AutoGenerateColumns="False" IsReadOnly="True" CanUserSortColumns="False"
+                      CanUserReorderColumns="False" SelectionMode="Single" HeadersVisibility="Column"
+                      GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E3E6EA" RowHeight="22"
+                      Background="White" MouseDoubleClick="OnParamAdd">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Parameter" Binding="{Binding name}" Width="3*"/>
+                <DataGridTextColumn Header="From" Binding="{Binding where}" Width="2*"/>
+                <DataGridTextColumn Header="Value" Binding="{Binding value}" Width="2*"/>
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+          <StackPanel Grid.Row="2" Grid.Column="1" VerticalAlignment="Center" Margin="10,0">
+            <Button x:Name="ParamAdd" Content="Add &#x203A;" Style="{StaticResource Primary}" MinWidth="80" Margin="0"
+                    Click="OnParamAdd" ToolTip="Adds the selected parameter after the selected part, or at the end."/>
+          </StackPanel>
+          <DockPanel Grid.Row="2" Grid.Column="2">
+            <TextBlock DockPanel.Dock="Top" Text="Parts of the file name, in order" Style="{StaticResource Head}"/>
+            <TextBlock x:Name="RuleNote" DockPanel.Dock="Top" Style="{StaticResource Note}" Margin="0,0,0,4"/>
+            <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal" Margin="0,6,0,0">
+              <Button x:Name="PartUp" Content="Move up" Click="OnPartUp"/>
+              <Button x:Name="PartDown" Content="Move down" Click="OnPartDown"/>
+              <Button x:Name="PartRemove" Content="Remove" Click="OnPartRemove"/>
+            </StackPanel>
+            <DataGrid x:Name="PartGrid" AutoGenerateColumns="False" CanUserAddRows="False" CanUserDeleteRows="False"
+                      CanUserSortColumns="False" CanUserReorderColumns="False" SelectionMode="Single"
+                      HeadersVisibility="Column" GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E3E6EA"
+                      RowHeight="24" Background="White">
+              <DataGrid.Columns>
+                <DataGridTextColumn Header="Parameter" Binding="{Binding param}" IsReadOnly="True" Width="2*"/>
+                <DataGridTemplateColumn Header="Read from" Width="2*">
+                  <DataGridTemplateColumn.CellTemplate>
+                    <DataTemplate>
+                      <ComboBox ItemsSource="{Binding source_choices}"
+                                SelectedItem="{Binding source, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                    </DataTemplate>
+                  </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+                <DataGridTextColumn Header="Text before" Binding="{Binding prefix, Mode=TwoWay}" Width="*"/>
+                <DataGridTextColumn Header="Text after" Binding="{Binding suffix, Mode=TwoWay}" Width="*"/>
+                <DataGridTextColumn Header="Separator after" Binding="{Binding sep, Mode=TwoWay}" Width="*"/>
+              </DataGrid.Columns>
+            </DataGrid>
+          </DockPanel>
+          <Border Grid.Row="3" Grid.ColumnSpan="3" Background="#F7F9FB" BorderBrush="#D0D4DA" BorderThickness="1"
+                  Padding="8" Margin="0,8,0,0">
+            <StackPanel Orientation="Horizontal">
+              <TextBlock x:Name="PreviewHead" Text="File name of the selected sheet:" FontWeight="SemiBold" Margin="0,0,8,0"/>
+              <TextBlock x:Name="RulePreview" TextWrapping="Wrap"/>
+            </StackPanel>
+          </Border>
+        </Grid>
+      </TabItem>
+
+      <!-- Step 3: formats and folder -->
+      <TabItem Visibility="Collapsed">
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+          <StackPanel Margin="0,0,8,0">
+            <TextBlock Style="{StaticResource Instruction}"
+                       Text="Choose the output folder and tick the formats to export. Click a format to open its settings, then press Next."/>
+            <GroupBox Header="Output folder">
+              <Grid>
+                <Grid.ColumnDefinitions>
+                  <ColumnDefinition Width="*"/>
+                  <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <Grid.RowDefinitions>
+                  <RowDefinition Height="Auto"/>
+                  <RowDefinition Height="Auto"/>
+                </Grid.RowDefinitions>
+                <TextBox x:Name="FolderBox" IsReadOnly="True" VerticalContentAlignment="Center"/>
+                <Button Grid.Column="1" Content="Browse" Click="OnBrowse" Margin="6,0,0,0"/>
+                <TextBlock x:Name="FolderNote" Grid.Row="1" Grid.ColumnSpan="2" Style="{StaticResource Note}" Margin="0,4,0,0"/>
+              </Grid>
+            </GroupBox>
+
+            <Expander x:Name="PdfExpander" IsExpanded="True">
+              <Expander.Header>
+                <CheckBox x:Name="DoPdf" Content="PDF" FontWeight="SemiBold" VerticalAlignment="Center" Click="OnFormats"/>
+              </Expander.Header>
+              <StackPanel>
+                <WrapPanel Margin="0,4,0,10">
+                  <TextBlock Text="File names of sheets from the rule" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="PdfRule" Width="200" SelectionChanged="OnFormatRule"/>
+                  <TextBlock Text="of views from the rule" Style="{StaticResource Label}"/>
+                  <ComboBox x:Name="PdfViewRule" Width="200" SelectionChanged="OnFormatRule"/>
+                </WrapPanel>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="420"/>
+                    <ColumnDefinition Width="420"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                    <GroupBox Header="Hidden line views">
+                      <StackPanel>
+                        <RadioButton x:Name="PdfVector" Content="Vector processing" GroupName="Processing" Margin="0,2"/>
+                        <RadioButton x:Name="PdfRaster" Content="Raster processing" GroupName="Processing" Margin="0,2"/>
+                        <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0"
+                                   Text="Views with a shaded or realistic style, transparency, shadows or images are rasterised whichever is chosen."/>
+                      </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="Raster quality">
+                      <StackPanel>
+                        <ComboBox x:Name="PdfQuality" Width="160" HorizontalAlignment="Left"/>
+                        <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0"
+                                   Text="Used for rasterised views. PD profiles use High (300 dpi). Presentation is the highest and gives the largest files: set it for one sheet at step 4 where that sheet needs it."/>
+                      </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="Colours">
+                      <ComboBox x:Name="PdfColour" Width="160" HorizontalAlignment="Left"/>
+                    </GroupBox>
+                    <GroupBox Header="File size">
+                      <StackPanel>
+                        <StackPanel Orientation="Horizontal">
+                          <TextBlock Text="Mark any PDF larger than" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                          <TextBox x:Name="SizeLimit" Width="60" VerticalContentAlignment="Center"/>
+                          <TextBlock Text="MB" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0"
+                                   Text="PD profiles start at 3 MB: above that, people have problems printing. The size of every PDF is shown after the export and kept in the export record."/>
+                      </StackPanel>
+                    </GroupBox>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1">
+                    <GroupBox Header="Paper placement">
+                      <StackPanel>
+                        <RadioButton x:Name="PdfCentre" Content="Centre" GroupName="Placement" Margin="0,2"/>
+                        <RadioButton x:Name="PdfOffset" Content="Offset from the lower left corner" GroupName="Placement" Margin="0,2"/>
+                        <StackPanel Orientation="Horizontal" Margin="20,2,0,0">
+                          <TextBlock Text="X" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                          <TextBox x:Name="PdfOffsetX" Width="50"/>
+                          <TextBlock Text="Y" VerticalAlignment="Center" Margin="12,0,4,0"/>
+                          <TextBox x:Name="PdfOffsetY" Width="50"/>
+                          <TextBlock Text="mm" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                        </StackPanel>
+                      </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="Zoom">
+                      <StackPanel>
+                        <RadioButton x:Name="PdfFit" Content="Fit to page" GroupName="Zoom" Margin="0,2"/>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                          <RadioButton x:Name="PdfZoom" Content="Zoom" GroupName="Zoom" VerticalAlignment="Center"/>
+                          <TextBox x:Name="PdfZoomValue" Width="50" Margin="8,0,4,0"/>
+                          <TextBlock Text="%" VerticalAlignment="Center"/>
+                        </StackPanel>
+                      </StackPanel>
+                    </GroupBox>
+                    <GroupBox Header="Options">
+                      <StackPanel>
+                        <CheckBox x:Name="PdfLinksBlue" Content="View links in blue" Margin="0,2"/>
+                        <CheckBox x:Name="PdfHideRef" Content="Hide reference and work planes" Margin="0,2"/>
+                        <CheckBox x:Name="PdfHideScope" Content="Hide scope boxes" Margin="0,2"/>
+                        <CheckBox x:Name="PdfHideTags" Content="Hide unreferenced view tags" Margin="0,2"/>
+                        <CheckBox x:Name="PdfHideCrop" Content="Hide crop boundaries" Margin="0,2"/>
+                        <CheckBox x:Name="PdfHalftone" Content="Replace halftone with thin lines" Margin="0,2"/>
+                        <CheckBox x:Name="PdfMask" Content="Region edges mask coincident lines" Margin="0,2"/>
+                      </StackPanel>
+                    </GroupBox>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Expander>
+
+            <Expander x:Name="DwgExpander" IsExpanded="False">
+              <Expander.Header>
+                <CheckBox x:Name="DoDwg" Content="DWG" FontWeight="SemiBold" VerticalAlignment="Center" Click="OnFormats"/>
+              </Expander.Header>
+              <StackPanel HorizontalAlignment="Left">
+                <WrapPanel Margin="0,4,0,10">
+                  <TextBlock Text="File names of sheets from the rule" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="DwgRule" Width="200" SelectionChanged="OnFormatRule"/>
+                  <TextBlock Text="of views from the rule" Style="{StaticResource Label}"/>
+                  <ComboBox x:Name="DwgViewRule" Width="200" SelectionChanged="OnFormatRule"/>
+                </WrapPanel>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="DWG export setup" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="DwgSetup" Width="320" SelectionChanged="OnDwgSetup"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                  <TextBlock Text="Text treatment" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="DwgText" Width="200"/>
+                </StackPanel>
+                <CheckBox x:Name="DwgSeparate" Margin="0,6,0,0"
+                          Content="Export views on sheets and links as external references"/>
+                <TextBlock Style="{StaticResource Note}" Margin="0,6,0,0" MaxWidth="640" HorizontalAlignment="Left"
+                           Text="DWG files use an export setup saved in this model. To add or change a setup in Revit, use File, Export, Options, Export Setups DWG/DXF."/>
+                <TextBlock Style="{StaticResource Note}" Margin="0,6,0,0" MaxWidth="640" HorizontalAlignment="Left"
+                           Text="Each sheet or view is one DWG file, with the linked models and the views on the sheet in it, whichever setup is chosen. Tick the box above for Revit to write a separate DWG file for each linked model in each view and for each view on a sheet; each one is then listed in Results. One sheet gave 47 files this way."/>
+                <TextBlock Style="{StaticResource Note}" Margin="0,6,0,0" MaxWidth="640" HorizontalAlignment="Left"
+                           Text="With Preserve editability, Revit writes text of several lines as one multiline text that can be edited in AutoCAD, whichever setup is chosen. Autodesk states that the position of the text and the length of its lines may then differ from those in Revit. With Preserve visual fidelity, Revit's own default, each line is written as a separate text: on one sheet, 339 of the 340 texts were a single line."/>
+              </StackPanel>
+            </Expander>
+
+            <Expander x:Name="DgnExpander" IsExpanded="False">
+              <Expander.Header>
+                <CheckBox x:Name="DoDgn" Content="DGN" FontWeight="SemiBold" VerticalAlignment="Center" Click="OnFormats"/>
+              </Expander.Header>
+              <StackPanel HorizontalAlignment="Left">
+                <TextBlock x:Name="DgnMissing" Style="{StaticResource Missing}"/>
+                <WrapPanel Margin="0,4,0,10">
+                  <TextBlock Text="File names of sheets from the rule" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="DgnRule" Width="200" SelectionChanged="OnFormatRule"/>
+                  <TextBlock Text="of views from the rule" Style="{StaticResource Label}"/>
+                  <ComboBox x:Name="DgnViewRule" Width="200" SelectionChanged="OnFormatRule"/>
+                </WrapPanel>
+                <StackPanel Orientation="Horizontal">
+                  <TextBlock Text="DGN export setup" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="DgnSetup" Width="320" SelectionChanged="OnDgnSetup"/>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                  <TextBlock Text="With Revit's own settings, write MicroStation" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="DgnVersion" Width="120"/>
+                </StackPanel>
+                <CheckBox x:Name="DgnSeparate" Margin="0,6,0,0"
+                          Content="Export views on sheets and links as external references"/>
+                <TextBlock Style="{StaticResource Note}" Margin="0,6,0,0" MaxWidth="640" HorizontalAlignment="Left"
+                           Text="DGN files use an export setup saved in this model, or Revit's own settings and seed file. To add or change a setup in Revit, use File, Export, Options, Export Setups DGN."/>
+                <TextBlock Style="{StaticResource Note}" Margin="0,6,0,0" MaxWidth="640" HorizontalAlignment="Left"
+                           Text="Each sheet or view is one DGN file, with the linked models and the views on the sheet in it, whichever setup is chosen. Tick the box above for Revit to write a separate DGN file for each linked model in each view, for each view on a sheet and for each linked CAD file; each one is then listed in Results. This can take a long time: in tests, a sheet whose elevation showed 10 linked models took 25 minutes. As one file, one plan took 53 seconds instead of 87."/>
+              </StackPanel>
+            </Expander>
+
+            <Expander x:Name="DwfExpander" IsExpanded="False">
+              <Expander.Header>
+                <CheckBox x:Name="DoDwf" Content="DWF or DWFx" FontWeight="SemiBold" VerticalAlignment="Center" Click="OnFormats"/>
+              </Expander.Header>
+              <StackPanel HorizontalAlignment="Left">
+                <TextBlock x:Name="DwfMissing" Style="{StaticResource Missing}"/>
+                <WrapPanel Margin="0,4,0,10">
+                  <TextBlock Text="File names of sheets from the rule" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="DwfRule" Width="200" SelectionChanged="OnFormatRule"/>
+                  <TextBlock Text="of views from the rule" Style="{StaticResource Label}"/>
+                  <ComboBox x:Name="DwfViewRule" Width="200" SelectionChanged="OnFormatRule"/>
+                </WrapPanel>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="420"/>
+                    <ColumnDefinition Width="420"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                    <GroupBox Header="File">
+                      <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                          <TextBlock Text="Write" VerticalAlignment="Center" Width="110"/>
+                          <ComboBox x:Name="DwfType" Width="160" SelectionChanged="OnDwfType"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                          <TextBlock Text="Images in the file" VerticalAlignment="Center" Width="110"/>
+                          <ComboBox x:Name="DwfImageFormat" Width="160"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                          <TextBlock Text="Image quality" VerticalAlignment="Center" Width="110"/>
+                          <ComboBox x:Name="DwfImageQuality" Width="160"/>
+                        </StackPanel>
+                      </StackPanel>
+                    </GroupBox>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1">
+                    <GroupBox Header="Options">
+                      <StackPanel>
+                        <CheckBox x:Name="DwfObjectData" Content="Include element properties" Margin="0,2"/>
+                        <CheckBox x:Name="DwfAreas" Content="Rooms and areas on a layer of their own" Margin="0,2"/>
+                        <CheckBox x:Name="DwfCropBox" Content="Show crop boundaries" Margin="0,2"/>
+                        <CheckBox x:Name="DwfTextures" Content="Include textures in 3D views" Margin="0,2"/>
+                      </StackPanel>
+                    </GroupBox>
+                  </StackPanel>
+                </Grid>
+                <TextBlock Style="{StaticResource Note}" Margin="0,2,0,0" MaxWidth="840" HorizontalAlignment="Left"
+                           Text="Element properties are what a DWF is usually opened for in Autodesk Design Review, so PD profiles include them."/>
+              </StackPanel>
+            </Expander>
+
+            <Expander x:Name="IfcExpander" IsExpanded="False">
+              <Expander.Header>
+                <CheckBox x:Name="DoIfc" Content="IFC" FontWeight="SemiBold" VerticalAlignment="Center" Click="OnFormats"/>
+              </Expander.Header>
+              <StackPanel HorizontalAlignment="Left">
+                <TextBlock x:Name="IfcMissing" Style="{StaticResource Missing}"/>
+                <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0" MaxWidth="840" HorizontalAlignment="Left"
+                           Text="IFC files are made from views of the model: plans, ceiling plans, sections, elevations and 3D views. Sheets, legends, drafting views and schedules are left out."/>
+                <WrapPanel Margin="0,8,0,10">
+                  <TextBlock Text="File names of views from the rule" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="IfcViewRule" Width="200" SelectionChanged="OnFormatRule"/>
+                </WrapPanel>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="420"/>
+                    <ColumnDefinition Width="420"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                    <GroupBox Header="IFC version">
+                      <ComboBox x:Name="IfcVersion" Width="260" HorizontalAlignment="Left"/>
+                    </GroupBox>
+                    <GroupBox Header="Space boundaries">
+                      <ComboBox x:Name="IfcSpaces" Width="160" HorizontalAlignment="Left"/>
+                    </GroupBox>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1">
+                    <GroupBox Header="Options">
+                      <StackPanel>
+                        <CheckBox x:Name="IfcVisibleOnly" Content="Only the elements seen in the view" Margin="0,2"/>
+                        <CheckBox x:Name="IfcSplit" Content="Split walls and columns by level" Margin="0,2"/>
+                        <CheckBox x:Name="IfcQuantities" Content="Include base quantities" Margin="0,2"/>
+                        <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0"
+                                   Text="With the first box clear, every IFC file holds the whole model, whichever view it is named after."/>
+                      </StackPanel>
+                    </GroupBox>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Expander>
+
+            <Expander x:Name="NwcExpander" IsExpanded="False">
+              <Expander.Header>
+                <CheckBox x:Name="DoNwc" Content="NWC (Navisworks)" FontWeight="SemiBold" VerticalAlignment="Center" Click="OnFormats"/>
+              </Expander.Header>
+              <StackPanel HorizontalAlignment="Left">
+                <TextBlock x:Name="NwcMissing" Style="{StaticResource Missing}"/>
+                <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0" MaxWidth="840" HorizontalAlignment="Left"
+                           Text="NWC files are made from views of the model: plans, ceiling plans, sections, elevations and 3D views. Each file holds what its view shows. On a workshared model Revit may borrow a few elements of a 3D view while it writes the file; PD Sheets gives them back afterwards."/>
+                <WrapPanel Margin="0,8,0,10">
+                  <TextBlock Text="File names of views from the rule" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="NwcViewRule" Width="200" SelectionChanged="OnFormatRule"/>
+                </WrapPanel>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="420"/>
+                    <ColumnDefinition Width="420"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                    <GroupBox Header="File">
+                      <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                          <TextBlock Text="Coordinates" VerticalAlignment="Center" Width="110"/>
+                          <ComboBox x:Name="NwcCoordinates" Width="160"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                          <TextBlock Text="Parameters" VerticalAlignment="Center" Width="110"/>
+                          <ComboBox x:Name="NwcParameters" Width="160"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                          <TextBlock Text="Faceting factor" VerticalAlignment="Center" Width="110"/>
+                          <TextBox x:Name="NwcFaceting" Width="60" VerticalContentAlignment="Center"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0"
+                                   Text="The faceting factor sets how finely curved faces are cut into flat ones. Revit's default is 1; a higher number gives smoother curves and a larger file."/>
+                      </StackPanel>
+                    </GroupBox>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1">
+                    <GroupBox Header="Options">
+                      <StackPanel>
+                        <CheckBox x:Name="NwcElementIds" Content="Element IDs" Margin="0,2"/>
+                        <CheckBox x:Name="NwcElementProperties" Content="Convert element properties" Margin="0,2"/>
+                        <CheckBox x:Name="NwcUrls" Content="URLs" Margin="0,2"/>
+                        <CheckBox x:Name="NwcDivideLevels" Content="Divide the file into levels" Margin="0,2"/>
+                        <CheckBox x:Name="NwcRoomGeometry" Content="Room geometry" Margin="0,2"/>
+                        <CheckBox x:Name="NwcRoomAttribute" Content="Rooms as an attribute" Margin="0,2"/>
+                        <CheckBox x:Name="NwcParts" Content="Parts" Margin="0,2"/>
+                        <CheckBox x:Name="NwcLinks" Content="Linked Revit models" Margin="0,2"/>
+                        <CheckBox x:Name="NwcLinkedCad" Content="Convert linked CAD files" Margin="0,2"/>
+                        <CheckBox x:Name="NwcLights" Content="Convert lights" Margin="0,2"/>
+                        <CheckBox x:Name="NwcMissingMaterials" Content="Find missing materials" Margin="0,2"/>
+                      </StackPanel>
+                    </GroupBox>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Expander>
+
+            <Expander x:Name="ImgExpander" IsExpanded="False">
+              <Expander.Header>
+                <CheckBox x:Name="DoImg" Content="Image" FontWeight="SemiBold" VerticalAlignment="Center" Click="OnFormats"/>
+              </Expander.Header>
+              <StackPanel HorizontalAlignment="Left">
+                <TextBlock x:Name="ImgMissing" Style="{StaticResource Missing}"/>
+                <WrapPanel Margin="0,4,0,10">
+                  <TextBlock Text="File names of sheets from the rule" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="ImgRule" Width="200" SelectionChanged="OnFormatRule"/>
+                  <TextBlock Text="of views from the rule" Style="{StaticResource Label}"/>
+                  <ComboBox x:Name="ImgViewRule" Width="200" SelectionChanged="OnFormatRule"/>
+                </WrapPanel>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="420"/>
+                    <ColumnDefinition Width="420"/>
+                  </Grid.ColumnDefinitions>
+                  <StackPanel Grid.Column="0" Margin="0,0,10,0">
+                    <GroupBox Header="File type">
+                      <ComboBox x:Name="ImgType" Width="200" HorizontalAlignment="Left"/>
+                    </GroupBox>
+                  </StackPanel>
+                  <StackPanel Grid.Column="1">
+                    <GroupBox Header="Image size">
+                      <StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,2">
+                          <RadioButton x:Name="ImgFit" Content="Fit to" GroupName="ImgSize" VerticalAlignment="Center" Width="70"/>
+                          <TextBox x:Name="ImgPixels" Width="60" VerticalContentAlignment="Center"/>
+                          <TextBlock Text="pixels" VerticalAlignment="Center" Margin="6,0,6,0"/>
+                          <ComboBox x:Name="ImgDirection" Width="80"/>
+                        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Margin="0,4,0,2">
+                          <RadioButton x:Name="ImgZoom" Content="Zoom to" GroupName="ImgSize" VerticalAlignment="Center" Width="70"/>
+                          <TextBox x:Name="ImgZoomValue" Width="60" VerticalContentAlignment="Center"/>
+                          <TextBlock Text="% at" VerticalAlignment="Center" Margin="6,0,6,0"/>
+                          <ComboBox x:Name="ImgResolution" Width="90"/>
+                        </StackPanel>
+                        <TextBlock Style="{StaticResource Note}" Margin="0,4,0,0"
+                                   Text="PD profiles fit images to 2048 pixels wide. Revit allows 32 to 15000 pixels, and a zoom of 1 to 100 %."/>
+                      </StackPanel>
+                    </GroupBox>
+                  </StackPanel>
+                </Grid>
+              </StackPanel>
+            </Expander>
+
+            <Expander x:Name="XmlExpander" IsExpanded="False">
+              <Expander.Header>
+                <CheckBox x:Name="DoXml" Content="XML" FontWeight="SemiBold" VerticalAlignment="Center" Click="OnFormats"/>
+              </Expander.Header>
+              <StackPanel HorizontalAlignment="Left">
+                <TextBlock x:Name="XmlMissing" Style="{StaticResource Missing}"/>
+                <WrapPanel Margin="0,4,0,6">
+                  <TextBlock Text="File names of sheets from the rule" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                  <ComboBox x:Name="XmlRule" Width="200" SelectionChanged="OnFormatRule"/>
+                  <TextBlock Text="of views from the rule" Style="{StaticResource Label}"/>
+                  <ComboBox x:Name="XmlViewRule" Width="200" SelectionChanged="OnFormatRule"/>
+                </WrapPanel>
+                <TextBlock Style="{StaticResource Note}" MaxWidth="840" HorizontalAlignment="Left"
+                           Text="One XML file for each sheet or view, holding the values listed here. The element name is the name each value has in the file."/>
+                <StackPanel Orientation="Horizontal" Margin="0,8,0,6">
+                  <TextBlock Text="Values written for" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                  <RadioButton x:Name="XmlSheets" Content="sheets" GroupName="XmlKind" VerticalAlignment="Center" Checked="OnXmlKind"/>
+                  <RadioButton x:Name="XmlViews" Content="views" GroupName="XmlKind" VerticalAlignment="Center" Margin="14,0,0,0" Checked="OnXmlKind"/>
+                </StackPanel>
+                <Grid>
+                  <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="640"/>
+                    <ColumnDefinition Width="Auto"/>
+                  </Grid.ColumnDefinitions>
+                  <DataGrid x:Name="XmlGrid" Grid.Column="0" Height="160" AutoGenerateColumns="False" CanUserAddRows="False"
+                            CanUserDeleteRows="False" CanUserSortColumns="False" CanUserReorderColumns="False"
+                            HeadersVisibility="Column" SelectionMode="Single" Background="White">
+                    <DataGrid.Columns>
+                      <DataGridTextColumn Header="Parameter" Binding="{Binding param}" IsReadOnly="True" Width="2*"/>
+                      <DataGridTextColumn Header="Read from" Binding="{Binding where}" IsReadOnly="True" Width="1.4*"/>
+                      <DataGridTextColumn Header="Element name in the file" Binding="{Binding element, Mode=TwoWay}" Width="2*"/>
+                      <DataGridTextColumn Header="Fixed text" Binding="{Binding value, Mode=TwoWay}" Width="1.6*">
+                        <DataGridTextColumn.CellStyle>
+                          <Style TargetType="DataGridCell">
+                            <Setter Property="IsEnabled" Value="{Binding is_fixed}"/>
+                          </Style>
+                        </DataGridTextColumn.CellStyle>
+                      </DataGridTextColumn>
+                    </DataGrid.Columns>
+                  </DataGrid>
+                  <StackPanel Grid.Column="1" Margin="8,0,0,0">
+                    <Button Content="Up" Click="OnXmlUp" Margin="0,0,0,4"/>
+                    <Button Content="Down" Click="OnXmlDown" Margin="0,0,0,4"/>
+                    <Button Content="Remove" Click="OnXmlRemove" Margin="0,0,0,4"/>
+                  </StackPanel>
+                </Grid>
+                <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                  <ComboBox x:Name="XmlParam" Width="360" IsEditable="True" IsTextSearchEnabled="True"/>
+                  <Button Content="Add the parameter" Click="OnXmlAdd" Margin="6,0,6,0"/>
+                  <Button Content="Add a fixed text" Click="OnXmlAddFixed"/>
+                </StackPanel>
+                <TextBlock x:Name="XmlProblems" Foreground="#B00020" TextWrapping="Wrap" MaxWidth="840"
+                           HorizontalAlignment="Left" Margin="0,6,0,0"/>
+                <TextBlock x:Name="XmlSampleHead" Style="{StaticResource Head}" Margin="0,8,0,4"/>
+                <TextBox x:Name="XmlSample" IsReadOnly="True" FontFamily="Consolas" Height="120" Width="640"
+                         HorizontalAlignment="Left" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                         TextWrapping="NoWrap"/>
+              </StackPanel>
+            </Expander>
+          </StackPanel>
+        </ScrollViewer>
+      </TabItem>
+
+      <!-- Step 4: check and export -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="170"/>
+          </Grid.RowDefinitions>
+          <TextBlock Grid.Row="0" Style="{StaticResource Instruction}"
+                     Text="Check each sheet or view before export. Change the paper, orientation or raster quality of any one here, then press Export."/>
+          <TextBlock x:Name="CheckSummary" Grid.Row="1" TextWrapping="Wrap" Margin="0,0,0,6"/>
+          <DataGrid x:Name="CheckGrid" Grid.Row="2" AutoGenerateColumns="False" CanUserAddRows="False"
+                    CanUserDeleteRows="False" CanUserSortColumns="False" CanUserReorderColumns="False"
+                    SelectionMode="Single" SelectionUnit="FullRow" HeadersVisibility="Column"
+                    GridLinesVisibility="Horizontal" HorizontalGridLinesBrush="#E3E6EA" RowHeight="24"
+                    Background="White" SelectionChanged="OnCheckSelected">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="Number" Binding="{Binding number}" IsReadOnly="True" Width="90"/>
+              <DataGridTextColumn Header="Name" Binding="{Binding name}" IsReadOnly="True" Width="2*"/>
+              <DataGridTextColumn Header="PDF file name" Binding="{Binding pdf_name, Mode=TwoWay}" Width="2*">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{Binding name_colour}"/>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+              <DataGridTextColumn Header="DWG file name" Binding="{Binding dwg_name, Mode=TwoWay}" Width="2*">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="{Binding name_colour}"/>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+              <DataGridTextColumn Header="DGN file name" Binding="{Binding dgn_name, Mode=TwoWay}" Width="2*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="DWF file name" Binding="{Binding dwf_name, Mode=TwoWay}" Width="2*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="IFC file name" Binding="{Binding ifc_name, Mode=TwoWay}" Width="2*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="NWC file name" Binding="{Binding nwc_name, Mode=TwoWay}" Width="2*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="Image file name" Binding="{Binding img_name, Mode=TwoWay}" Width="2*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTextColumn Header="XML file name" Binding="{Binding xml_name, Mode=TwoWay}" Width="2*"
+                                  ElementStyle="{StaticResource FileName}"/>
+              <DataGridTemplateColumn Header="Paper" Width="120">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <ComboBox ItemsSource="{Binding paper_choices}"
+                              SelectedItem="{Binding paper, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTemplateColumn Header="Orientation" Width="95">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <ComboBox ItemsSource="{Binding orientation_choices}"
+                              SelectedItem="{Binding orientation, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTemplateColumn Header="Raster quality" Width="110">
+                <DataGridTemplateColumn.CellTemplate>
+                  <DataTemplate>
+                    <ComboBox ItemsSource="{Binding quality_choices}"
+                              SelectedItem="{Binding quality, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"/>
+                  </DataTemplate>
+                </DataGridTemplateColumn.CellTemplate>
+              </DataGridTemplateColumn>
+              <DataGridTextColumn Header="May be rasterised" Binding="{Binding raster_text}" IsReadOnly="True" Width="120"/>
+              <DataGridTextColumn Header="Problems" Binding="{Binding check}" IsReadOnly="True" Width="2*"
+                                  ElementStyle="{StaticResource Problems}"/>
+            </DataGrid.Columns>
+          </DataGrid>
+          <Grid Grid.Row="3" Margin="0,8,0,0">
+            <Grid.ColumnDefinitions>
+              <ColumnDefinition Width="*"/>
+              <ColumnDefinition Width="320"/>
+            </Grid.ColumnDefinitions>
+            <DockPanel>
+              <TextBlock x:Name="RasterHead" DockPanel.Dock="Top" Style="{StaticResource Head}"
+                         Text="Select a sheet to see the views Revit will rasterise in its PDF."/>
+              <TextBox x:Name="RasterList" IsReadOnly="True" TextWrapping="Wrap" VerticalScrollBarVisibility="Auto"
+                       Background="White"/>
+            </DockPanel>
+            <TextBlock Grid.Column="1" Style="{StaticResource Note}" Margin="12,22,0,0"
+                       Text="Revit turns some views into images in the PDF: it rasterises them. That makes the file larger, and the lines less sharp when zoomed in. To avoid it, change the view in the model (the reason is given on the left, for example transparency set in its view template), or set a lower raster quality for that sheet. Nothing needs doing where the count is none."/>
+          </Grid>
+        </Grid>
+      </TabItem>
+
+      <!-- Results -->
+      <TabItem Visibility="Collapsed">
+        <Grid>
+          <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+          </Grid.RowDefinitions>
+          <TextBlock x:Name="ResultSummary" Grid.Row="0" Style="{StaticResource Instruction}"
+                     Text="Nothing has been exported yet."/>
+          <TextBlock Grid.Row="1" Style="{StaticResource Note}" Margin="0,0,0,6"
+                     Text="Double-click a file to open its folder with the file selected."/>
+          <DataGrid x:Name="ResultGrid" Grid.Row="2" AutoGenerateColumns="False" IsReadOnly="True"
+                    CanUserSortColumns="False" HeadersVisibility="Column" GridLinesVisibility="Horizontal"
+                    HorizontalGridLinesBrush="#E3E6EA" RowHeight="22" Background="White" SelectionMode="Single"
+                    MouseDoubleClick="OnOpenLocation">
+            <DataGrid.Columns>
+              <DataGridTextColumn Header="File" Binding="{Binding file}" Width="3*"/>
+              <DataGridTextColumn Header="Result" Binding="{Binding result}" Width="2*"/>
+              <DataGridTextColumn Header="Size (MB)" Binding="{Binding size}" Width="75"/>
+              <DataGridTextColumn Header="Over the limit" Binding="{Binding over}" Width="95">
+                <DataGridTextColumn.ElementStyle>
+                  <Style TargetType="TextBlock">
+                    <Setter Property="Foreground" Value="#B00020"/>
+                    <Setter Property="FontWeight" Value="SemiBold"/>
+                  </Style>
+                </DataGridTextColumn.ElementStyle>
+              </DataGridTextColumn>
+              <DataGridTextColumn Header="May be rasterised" Binding="{Binding rasterised}" Width="120"/>
+              <DataGridTextColumn Header="Time" Binding="{Binding time}" Width="60"/>
+              <DataGridTextColumn Header="Note" Binding="{Binding note}" Width="3*"/>
+            </DataGrid.Columns>
+          </DataGrid>
+          <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,8,0,0">
+            <Button Content="Open file location" Click="OnOpenLocation" Style="{StaticResource Primary}"/>
+            <Button Content="Open the file" Click="OnOpenFile"/>
+            <Button Content="Open the export record" Click="OnOpenRecord"/>
+          </StackPanel>
+        </Grid>
+      </TabItem>
+    </TabControl>
+
+    <!-- Status and the buttons that move between the steps -->
+    <Grid Grid.Row="3" Margin="0,8,0,0">
+      <Grid.ColumnDefinitions>
+        <ColumnDefinition Width="*"/>
+        <ColumnDefinition Width="Auto"/>
+      </Grid.ColumnDefinitions>
+      <TextBlock x:Name="Status" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0"/>
+      <StackPanel Grid.Column="1" Orientation="Horizontal">
+        <Button x:Name="BackButton" Content="&#x2039; Back" Click="OnBack"/>
+        <Button x:Name="NextButton" Content="Next &#x203A;" Style="{StaticResource Primary}" Click="OnNext"/>
+        <Button x:Name="ExportButton" Content="Export" Style="{StaticResource Primary}" Click="OnExport"
+                Visibility="Collapsed"/>
+        <Button Content="Close" Click="OnClose" Margin="0"/>
+      </StackPanel>
+    </Grid>
+  </Grid>
+</Window>

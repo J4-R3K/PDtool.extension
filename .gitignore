@@ -1,5 +1,8 @@
 /EF-Starter.tab/**
 /lib/**
+# PD's own library (PD Sheets and the shared code the buttons import) is tracked
+!/lib/pdtool/
+!/lib/pdtool/**
 /hooks/**
 /bin/**
 
